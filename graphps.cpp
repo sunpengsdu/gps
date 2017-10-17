@@ -2,16 +2,11 @@
 
 class VertexUpdateHandler : virtual public VertexUpdateIf {
  public:
-  VertexUpdateHandler() {
-    // Your initialization goes here
-  }
-
+  VertexUpdateHandler() {}
   int32_t ping(int32_t id) {
-    // Your implementation goes here
-    printf("ping %d\n", id);
+    LOG(INFO) << "ping " << id;
     return 0;
   }
-
 };
 
 void start_gserver() {
@@ -24,7 +19,7 @@ void start_gserver() {
   shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
   #endif
   shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
-  shared_ptr<ThreadManager> threadManager = ThreadManager::newSimpleThreadManager(_server_threadnum);
+  shared_ptr<ThreadManager> threadManager = ThreadManager::newSimpleThreadManager(COMNUM);
   shared_ptr<PosixThreadFactory> threadFactory = shared_ptr<PosixThreadFactory>(new PosixThreadFactory());    
   threadManager->threadFactory(threadFactory);    
   threadManager->start();    

@@ -1,45 +1,60 @@
-#include "../thrift/gen-cpp/VertexUpdate.h"
-#include <thrift/transport/TServerSocket.h>
-#include <thrift/protocol/TBinaryProtocol.h>
-#include <thrift/server/TThreadPoolServer.h>    
-#include <thrift/server/TSimpleServer.h>
-#include <thrift/server/TThreadedServer.h> 
-#include <thrift/concurrency/ThreadManager.h>    
-#include <thrift/concurrency/PosixThreadFactory.h>  
-#include <thrift/transport/TSocket.h>
-#include <thrift/transport/TBufferTransports.h>
-#include <thrift/transport/TZlibTransport.h>
-#include <thread>
-#include <map>
-#include <chrono>
-#include <mpi.h>
-#include <glog/logging.h>
+#ifndef SYSTEM_GLOBAL_H_
+#define SYSTEM_GLOBAL_H_
 
-#define HOST_LEN 20
-#define COMPRESS
+#include "include.h"
+#include "dataload.h"
 
-using namespace ::apache::thrift;
-using namespace ::apache::thrift::protocol;
-using namespace ::apache::thrift::transport;
-using namespace ::apache::thrift::server;
-using namespace ::apache::thrift::concurrency;
-using boost::shared_ptr;
-using namespace  ::graphps;
+int32_t get_col_id(int32_t vertex_id) {
+  return std::floor(vertex_id/vertex_num_per_col);
+}
 
-int _server_port = 9090;
-int _server_threadnum = 1;
-int16_t _comp_level = 1;
-int _my_rank;
-int _num_workers;
-int _hostname_len;
-char _hostname[HOST_LEN];
-char *_all_hostname;
-std::map<int, std::string> _map_hosts;
+void barrier_workers() {
+  MPI_Barrier(MPI_COMM_WORLD);
+}
 
-int DEFAULT_URBUF_SIZE_SP = 2048;
-int DEFAULT_CRBUF_SIZE_SP = 2048;
-int DEFAULT_UWBUF_SIZE_SP = 2048;
-int DEFAULT_CWBUF_SIZE_SP = 2048;
+void finalize_workers() {
+  LOG(INFO) << "Finalizing the application";
+  delete [] (_all_hostname);
+  for (auto t_it = _EdgeCache.begin(); t_it != _EdgeCache.end(); t_it++) {
+    delete [] t_it->second.data;
+  }
+  for (int32_t i = 0; i < CMPNUM; i++) {
+    delete [] (_Edge_Buffer[i]);
+    delete [] (_Uncompressed_Buffer[i]);
+  }
+  MPI_Finalize();
+}
+
+void start_time_app() {
+  APP_TIME_START = std::chrono::steady_clock::now();
+}
+
+void stop_time_app() {
+  APP_TIME_END = std::chrono::steady_clock::now();
+  APP_TIME = std::chrono::duration_cast<std::chrono::milliseconds>
+             (APP_TIME_END-APP_TIME_START).count();
+}
+
+void start_time_init() {
+  INIT_TIME_START = std::chrono::steady_clock::now();
+}
+
+void stop_time_init() {
+  INIT_TIME_END = std::chrono::steady_clock::now();
+  INIT_TIME = std::chrono::duration_cast<std::chrono::milliseconds>
+              (INIT_TIME_END-INIT_TIME_START).count();
+}
+
+void start_time_comp() {
+  COMP_TIME_START = std::chrono::steady_clock::now();
+}
+
+void stop_time_comp() {
+  COMP_TIME_END = std::chrono::steady_clock::now();
+  COMP_TIME = std::chrono::duration_cast<std::chrono::milliseconds>
+              (COMP_TIME_END-COMP_TIME_START).count();
+}
+
 
 class TZlibBufferdTransportFactory : public TTransportFactory {
  public:
@@ -75,5 +90,14 @@ void init_nodes() {
     std::string host_name(_all_hostname + i * HOST_LEN);
     _map_hosts[i] = host_name;
   }
+  _EdgeCache_Size = 0;
+  _EdgeCache_Size_Uncompress = 0;
+  _Computing_Num = 0;
+  _Missed_Num = 0;
+  _Network_Compressed = 0;
+  _Network_Uncompressed = 0;
+  _Changed_Vertex = 0;
   MPI_Barrier(MPI_COMM_WORLD);
 }
+
+#endif
