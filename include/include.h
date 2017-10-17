@@ -14,6 +14,7 @@
 #include <thrift/transport/TSocket.h>
 #include <thrift/transport/TBufferTransports.h>
 #include <thrift/transport/TZlibTransport.h>
+#include <boost/make_shared.hpp>
 #include <thread>
 #include <map>
 #include <chrono>
@@ -80,8 +81,8 @@ int64_t COMP_TIME;
 int64_t APP_TIME;
 struct EdgeCacheData {
   char * data;
-  int32_t compressed_length;
-  int32_t uncompressed_length;
+  size_t compressed_length;
+  size_t uncompressed_length;
 };
 
 std::unordered_map<int32_t, EdgeCacheData> _EdgeCache;
@@ -89,9 +90,9 @@ std::atomic<int32_t> _EdgeCache_Size;
 std::atomic<int32_t> _EdgeCache_Size_Uncompress;
 std::atomic<int32_t> _Computing_Num;
 std::atomic<int32_t> _Missed_Num;
-std::atomic<long> _Network_Compressed;
-std::atomic<long> _Network_Uncompressed;
-std::atomic<long> _Changed_Vertex;
+std::atomic<size_t> _Network_Compressed;
+std::atomic<size_t> _Network_Uncompressed;
+std::atomic<size_t> _Changed_Vertex;
 
 std::unordered_map<int, char*> _Edge_Buffer;
 std::unordered_map<int, size_t> _Edge_Buffer_Len;
@@ -111,9 +112,9 @@ char _hostname[HOST_LEN];
 char *_all_hostname;
 std::map<int, std::string> _map_hosts;
 
-int DEFAULT_URBUF_SIZE_SP = 2048;
-int DEFAULT_CRBUF_SIZE_SP = 2048;
-int DEFAULT_UWBUF_SIZE_SP = 2048;
-int DEFAULT_CWBUF_SIZE_SP = 2048;
+int DEFAULT_URBUF_SIZE_SP = 5120;
+int DEFAULT_CRBUF_SIZE_SP = 5120;
+int DEFAULT_UWBUF_SIZE_SP = 5120;
+int DEFAULT_CWBUF_SIZE_SP = 5120;
 
 #endif

@@ -18,15 +18,15 @@ VertexData::~VertexData() throw() {
 }
 
 
-void VertexData::__set_value(const ValueDtype val) {
+void VertexData::__set_value(const VvalueDtype val) {
   this->value = val;
 }
 
-void VertexData::__set_msg(const MsgDtype val) {
+void VertexData::__set_msg(const VmsgDtype val) {
   this->msg = val;
 }
 
-void VertexData::__set_indegree(const DegreeDtype val) {
+void VertexData::__set_indegree(const VdegDtype val) {
   this->indegree = val;
 __isset.indegree = true;
 }
@@ -53,16 +53,16 @@ uint32_t VertexData::read(::apache::thrift::protocol::TProtocol* iprot) {
     switch (fid)
     {
       case 1:
-        if (ftype == ::apache::thrift::protocol::T_I64) {
-          xfer += iprot->readI64(this->value);
+        if (ftype == ::apache::thrift::protocol::T_DOUBLE) {
+          xfer += iprot->readDouble(this->value);
           this->__isset.value = true;
         } else {
           xfer += iprot->skip(ftype);
         }
         break;
       case 2:
-        if (ftype == ::apache::thrift::protocol::T_I64) {
-          xfer += iprot->readI64(this->msg);
+        if (ftype == ::apache::thrift::protocol::T_DOUBLE) {
+          xfer += iprot->readDouble(this->msg);
           this->__isset.msg = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -93,12 +93,12 @@ uint32_t VertexData::write(::apache::thrift::protocol::TProtocol* oprot) const {
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("VertexData");
 
-  xfer += oprot->writeFieldBegin("value", ::apache::thrift::protocol::T_I64, 1);
-  xfer += oprot->writeI64(this->value);
+  xfer += oprot->writeFieldBegin("value", ::apache::thrift::protocol::T_DOUBLE, 1);
+  xfer += oprot->writeDouble(this->value);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("msg", ::apache::thrift::protocol::T_I64, 2);
-  xfer += oprot->writeI64(this->msg);
+  xfer += oprot->writeFieldBegin("msg", ::apache::thrift::protocol::T_DOUBLE, 2);
+  xfer += oprot->writeDouble(this->msg);
   xfer += oprot->writeFieldEnd();
 
   if (this->__isset.indegree) {

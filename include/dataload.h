@@ -46,7 +46,7 @@ void Resize_Edge_Buffer(int32_t omp_id, size_t required_len) {
       delete [] (_Edge_Buffer[omp_id]);
     }
     _Edge_Buffer[omp_id] = new char[int(required_len*1.2)];
-    _Edge_Buffer_Len[omp_id] = int(required_len*1.2);
+    _Edge_Buffer_Len[omp_id] = size_t(required_len*1.2);
   }
 }
 
@@ -77,7 +77,7 @@ void Resize_Uncompressed_Buffer(int32_t omp_id, size_t max_compressed_len) {
       delete [] (_Uncompressed_Buffer[omp_id]);
     }
     _Uncompressed_Buffer[omp_id] = new char[int(max_compressed_len*1.2)];
-    _Uncompressed_Buffer_Len[omp_id] = int(max_compressed_len*1.2);
+    _Uncompressed_Buffer_Len[omp_id] = size_t(max_compressed_len*1.2);
   }
 }
 
@@ -145,7 +145,6 @@ char *load_edge(int32_t p_id, std::string &DataPath) {
     char* compressed_data_tmp = NULL;
     char* compressed_data = NULL;
     size_t compressed_length = 0;
-    int32_t max_compressed_len = 0;
 
     if (COMPRESS_CACHE_LEVEL == 1) {
       compressed_data_tmp = PutCache_Level_1(omp_id, std::ref(npz), &compressed_length);

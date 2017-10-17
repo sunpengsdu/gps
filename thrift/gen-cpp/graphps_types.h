@@ -20,11 +20,13 @@
 
 namespace graphps {
 
-typedef int64_t ValueDtype;
+typedef int32_t VidDtype;
 
-typedef int64_t MsgDtype;
+typedef double VvalueDtype;
 
-typedef int32_t DegreeDtype;
+typedef double VmsgDtype;
+
+typedef int32_t VdegDtype;
 
 class VertexData;
 
@@ -44,17 +46,17 @@ class VertexData : public virtual ::apache::thrift::TBase {
   }
 
   virtual ~VertexData() throw();
-  ValueDtype value;
-  MsgDtype msg;
-  DegreeDtype indegree;
+  VvalueDtype value;
+  VmsgDtype msg;
+  VdegDtype indegree;
 
   _VertexData__isset __isset;
 
-  void __set_value(const ValueDtype val);
+  void __set_value(const VvalueDtype val);
 
-  void __set_msg(const MsgDtype val);
+  void __set_msg(const VmsgDtype val);
 
-  void __set_indegree(const DegreeDtype val);
+  void __set_indegree(const VdegDtype val);
 
   bool operator == (const VertexData & rhs) const
   {

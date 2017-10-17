@@ -1,4 +1,7 @@
 #include "./include/global.h"
+#include "graphps.h"
+
+shared_ptr<GraphPS> _GraphPS;
 
 class VertexUpdateHandler : virtual public VertexUpdateIf {
  public:
@@ -56,6 +59,7 @@ int main(int argc, char **argv) {
   init_nodes();
   std::thread gserver_thread(start_gserver);
   sleep_ms(10);
+  _GraphPS = boost::make_shared<GraphPS>();
 
   new_gworker();
 

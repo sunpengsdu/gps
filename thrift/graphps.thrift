@@ -1,13 +1,14 @@
 namespace cpp graphps
 
-typedef i64 ValueDtype
-typedef i64 MsgDtype
-typedef i32 DegreeDtype
+typedef i32 VidDtype
+typedef double VvalueDtype
+typedef double VmsgDtype
+typedef i32 VdegDtype
 
 struct VertexData {
-  1: ValueDtype value,
-  2: MsgDtype msg,
-  3: optional DegreeDtype indegree,
+  1: VvalueDtype value,
+  2: VmsgDtype msg,
+  3: optional VdegDtype indegree,
 }
 
 service VertexUpdate {

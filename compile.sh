@@ -1,1 +1,1 @@
-/opt/mpich/bin/mpic++ ./thrift/gen-cpp/VertexUpdate.cpp ./thrift/gen-cpp/graphps_constants.cpp  ./thrift/gen-cpp/graphps_types.cpp ./graphps.cpp -O2 -fopenmp  -lthrift -lthriftz  -lglog -lz -lsnappy  -std=c++11  -o graphps
+/opt/mpich/bin/mpic++ ./thrift/gen-cpp/VertexUpdate.cpp ./thrift/gen-cpp/graphps_constants.cpp  ./thrift/gen-cpp/graphps_types.cpp ./main.cpp -Wall -O2 -fopenmp  -lthrift -lthriftz  -lglog -lz -lsnappy  -std=c++11  -o graphps
