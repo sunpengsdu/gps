@@ -32,7 +32,20 @@ uint32_t VertexUpdate_ping_args::read(::apache::thrift::protocol::TProtocol* ipr
     if (ftype == ::apache::thrift::protocol::T_STOP) {
       break;
     }
-    xfer += iprot->skip(ftype);
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->id);
+          this->__isset.id = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
     xfer += iprot->readFieldEnd();
   }
 
@@ -45,6 +58,10 @@ uint32_t VertexUpdate_ping_args::write(::apache::thrift::protocol::TProtocol* op
   uint32_t xfer = 0;
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("VertexUpdate_ping_args");
+
+  xfer += oprot->writeFieldBegin("id", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32(this->id);
+  xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
@@ -60,6 +77,10 @@ uint32_t VertexUpdate_ping_pargs::write(::apache::thrift::protocol::TProtocol* o
   uint32_t xfer = 0;
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("VertexUpdate_ping_pargs");
+
+  xfer += oprot->writeFieldBegin("id", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32((*(this->id)));
+  xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
@@ -90,7 +111,20 @@ uint32_t VertexUpdate_ping_result::read(::apache::thrift::protocol::TProtocol* i
     if (ftype == ::apache::thrift::protocol::T_STOP) {
       break;
     }
-    xfer += iprot->skip(ftype);
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->success);
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
     xfer += iprot->readFieldEnd();
   }
 
@@ -105,6 +139,11 @@ uint32_t VertexUpdate_ping_result::write(::apache::thrift::protocol::TProtocol* 
 
   xfer += oprot->writeStructBegin("VertexUpdate_ping_result");
 
+  if (this->__isset.success) {
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_I32, 0);
+    xfer += oprot->writeI32(this->success);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -134,7 +173,20 @@ uint32_t VertexUpdate_ping_presult::read(::apache::thrift::protocol::TProtocol* 
     if (ftype == ::apache::thrift::protocol::T_STOP) {
       break;
     }
-    xfer += iprot->skip(ftype);
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32((*(this->success)));
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
     xfer += iprot->readFieldEnd();
   }
 
@@ -143,18 +195,19 @@ uint32_t VertexUpdate_ping_presult::read(::apache::thrift::protocol::TProtocol* 
   return xfer;
 }
 
-void VertexUpdateClient::ping()
+int32_t VertexUpdateClient::ping(const int32_t id)
 {
-  send_ping();
-  recv_ping();
+  send_ping(id);
+  return recv_ping();
 }
 
-void VertexUpdateClient::send_ping()
+void VertexUpdateClient::send_ping(const int32_t id)
 {
   int32_t cseqid = 0;
   oprot_->writeMessageBegin("ping", ::apache::thrift::protocol::T_CALL, cseqid);
 
   VertexUpdate_ping_pargs args;
+  args.id = &id;
   args.write(oprot_);
 
   oprot_->writeMessageEnd();
@@ -162,7 +215,7 @@ void VertexUpdateClient::send_ping()
   oprot_->getTransport()->flush();
 }
 
-void VertexUpdateClient::recv_ping()
+int32_t VertexUpdateClient::recv_ping()
 {
 
   int32_t rseqid = 0;
@@ -187,12 +240,17 @@ void VertexUpdateClient::recv_ping()
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
+  int32_t _return;
   VertexUpdate_ping_presult result;
+  result.success = &_return;
   result.read(iprot_);
   iprot_->readMessageEnd();
   iprot_->getTransport()->readEnd();
 
-  return;
+  if (result.__isset.success) {
+    return _return;
+  }
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "ping failed: unknown result");
 }
 
 bool VertexUpdateProcessor::dispatchCall(::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, const std::string& fname, int32_t seqid, void* callContext) {
@@ -237,7 +295,8 @@ void VertexUpdateProcessor::process_ping(int32_t seqid, ::apache::thrift::protoc
 
   VertexUpdate_ping_result result;
   try {
-    iface_->ping();
+    result.success = iface_->ping(args.id);
+    result.__isset.success = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {
       this->eventHandler_->handlerError(ctx, "VertexUpdate.ping");
@@ -274,19 +333,20 @@ void VertexUpdateProcessor::process_ping(int32_t seqid, ::apache::thrift::protoc
   return processor;
 }
 
-void VertexUpdateConcurrentClient::ping()
+int32_t VertexUpdateConcurrentClient::ping(const int32_t id)
 {
-  int32_t seqid = send_ping();
-  recv_ping(seqid);
+  int32_t seqid = send_ping(id);
+  return recv_ping(seqid);
 }
 
-int32_t VertexUpdateConcurrentClient::send_ping()
+int32_t VertexUpdateConcurrentClient::send_ping(const int32_t id)
 {
   int32_t cseqid = this->sync_.generateSeqId();
   ::apache::thrift::async::TConcurrentSendSentry sentry(&this->sync_);
   oprot_->writeMessageBegin("ping", ::apache::thrift::protocol::T_CALL, cseqid);
 
   VertexUpdate_ping_pargs args;
+  args.id = &id;
   args.write(oprot_);
 
   oprot_->writeMessageEnd();
@@ -297,7 +357,7 @@ int32_t VertexUpdateConcurrentClient::send_ping()
   return cseqid;
 }
 
-void VertexUpdateConcurrentClient::recv_ping(const int32_t seqid)
+int32_t VertexUpdateConcurrentClient::recv_ping(const int32_t seqid)
 {
 
   int32_t rseqid = 0;
@@ -335,13 +395,19 @@ void VertexUpdateConcurrentClient::recv_ping(const int32_t seqid)
         using ::apache::thrift::protocol::TProtocolException;
         throw TProtocolException(TProtocolException::INVALID_DATA);
       }
+      int32_t _return;
       VertexUpdate_ping_presult result;
+      result.success = &_return;
       result.read(iprot_);
       iprot_->readMessageEnd();
       iprot_->getTransport()->readEnd();
 
-      sentry.commit();
-      return;
+      if (result.__isset.success) {
+        sentry.commit();
+        return _return;
+      }
+      // in a bad state, don't commit
+      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "ping failed: unknown result");
     }
     // seqid != rseqid
     this->sync_.updatePending(fname, mtype, rseqid);

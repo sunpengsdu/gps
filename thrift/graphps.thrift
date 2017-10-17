@@ -11,5 +11,5 @@ struct VertexData {
 }
 
 service VertexUpdate {
-   void ping()
+   i32 ping(1: i32 id)
 }

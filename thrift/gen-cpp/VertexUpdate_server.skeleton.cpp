@@ -22,7 +22,7 @@ class VertexUpdateHandler : virtual public VertexUpdateIf {
     // Your initialization goes here
   }
 
-  void ping() {
+  int32_t ping(const int32_t id) {
     // Your implementation goes here
     printf("ping\n");
   }

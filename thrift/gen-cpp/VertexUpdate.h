@@ -21,7 +21,7 @@ namespace graphps {
 class VertexUpdateIf {
  public:
   virtual ~VertexUpdateIf() {}
-  virtual void ping() = 0;
+  virtual int32_t ping(const int32_t id) = 0;
 };
 
 class VertexUpdateIfFactory {
@@ -51,24 +51,36 @@ class VertexUpdateIfSingletonFactory : virtual public VertexUpdateIfFactory {
 class VertexUpdateNull : virtual public VertexUpdateIf {
  public:
   virtual ~VertexUpdateNull() {}
-  void ping() {
-    return;
+  int32_t ping(const int32_t /* id */) {
+    int32_t _return = 0;
+    return _return;
   }
 };
 
+typedef struct _VertexUpdate_ping_args__isset {
+  _VertexUpdate_ping_args__isset() : id(false) {}
+  bool id :1;
+} _VertexUpdate_ping_args__isset;
 
 class VertexUpdate_ping_args {
  public:
 
   VertexUpdate_ping_args(const VertexUpdate_ping_args&);
   VertexUpdate_ping_args& operator=(const VertexUpdate_ping_args&);
-  VertexUpdate_ping_args() {
+  VertexUpdate_ping_args() : id(0) {
   }
 
   virtual ~VertexUpdate_ping_args() throw();
+  int32_t id;
 
-  bool operator == (const VertexUpdate_ping_args & /* rhs */) const
+  _VertexUpdate_ping_args__isset __isset;
+
+  void __set_id(const int32_t val);
+
+  bool operator == (const VertexUpdate_ping_args & rhs) const
   {
+    if (!(id == rhs.id))
+      return false;
     return true;
   }
   bool operator != (const VertexUpdate_ping_args &rhs) const {
@@ -88,24 +100,36 @@ class VertexUpdate_ping_pargs {
 
 
   virtual ~VertexUpdate_ping_pargs() throw();
+  const int32_t* id;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
+typedef struct _VertexUpdate_ping_result__isset {
+  _VertexUpdate_ping_result__isset() : success(false) {}
+  bool success :1;
+} _VertexUpdate_ping_result__isset;
 
 class VertexUpdate_ping_result {
  public:
 
   VertexUpdate_ping_result(const VertexUpdate_ping_result&);
   VertexUpdate_ping_result& operator=(const VertexUpdate_ping_result&);
-  VertexUpdate_ping_result() {
+  VertexUpdate_ping_result() : success(0) {
   }
 
   virtual ~VertexUpdate_ping_result() throw();
+  int32_t success;
 
-  bool operator == (const VertexUpdate_ping_result & /* rhs */) const
+  _VertexUpdate_ping_result__isset __isset;
+
+  void __set_success(const int32_t val);
+
+  bool operator == (const VertexUpdate_ping_result & rhs) const
   {
+    if (!(success == rhs.success))
+      return false;
     return true;
   }
   bool operator != (const VertexUpdate_ping_result &rhs) const {
@@ -119,12 +143,19 @@ class VertexUpdate_ping_result {
 
 };
 
+typedef struct _VertexUpdate_ping_presult__isset {
+  _VertexUpdate_ping_presult__isset() : success(false) {}
+  bool success :1;
+} _VertexUpdate_ping_presult__isset;
 
 class VertexUpdate_ping_presult {
  public:
 
 
   virtual ~VertexUpdate_ping_presult() throw();
+  int32_t* success;
+
+  _VertexUpdate_ping_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -155,9 +186,9 @@ class VertexUpdateClient : virtual public VertexUpdateIf {
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> getOutputProtocol() {
     return poprot_;
   }
-  void ping();
-  void send_ping();
-  void recv_ping();
+  int32_t ping(const int32_t id);
+  void send_ping(const int32_t id);
+  int32_t recv_ping();
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
@@ -206,13 +237,13 @@ class VertexUpdateMultiface : virtual public VertexUpdateIf {
     ifaces_.push_back(iface);
   }
  public:
-  void ping() {
+  int32_t ping(const int32_t id) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->ping();
+      ifaces_[i]->ping(id);
     }
-    ifaces_[i]->ping();
+    return ifaces_[i]->ping(id);
   }
 
 };
@@ -245,9 +276,9 @@ class VertexUpdateConcurrentClient : virtual public VertexUpdateIf {
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> getOutputProtocol() {
     return poprot_;
   }
-  void ping();
-  int32_t send_ping();
-  void recv_ping(const int32_t seqid);
+  int32_t ping(const int32_t id);
+  int32_t send_ping(const int32_t id);
+  int32_t recv_ping(const int32_t seqid);
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
