@@ -5,7 +5,7 @@
 #include "dataload.h"
 
 int32_t get_col_id(int32_t vertex_id) {
-  return std::floor(vertex_id/vertex_num_per_col);
+  return std::floor(vertex_id/_vertex_num_per_col);
 }
 
 void barrier_workers() {

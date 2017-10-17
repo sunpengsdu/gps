@@ -56,13 +56,23 @@ void new_gworker() {
 }
 
 int main(int argc, char **argv) {
+  start_time_app();
+  FLAGS_logtostderr = 1;
+  google::InitGoogleLogging(argv[0]);
   init_nodes();
-  std::thread gserver_thread(start_gserver);
+  // std::thread gserver_thread(start_gserver);
   sleep_ms(10);
   _GraphPS = boost::make_shared<GraphPS>();
+  // Data Path, VertexNum number, Partition number,  Max Iteration
+  // _GraphPS->init("/data/3/mp-9/eu/", 1070557254, 800, 100);
+  _GraphPS->init("/data/3/mp-9/twitter/", 41652230, 50,  100);
+  // _GraphPS->init("/home/mapred/GraphData/webuk_3/", 133633040, 300, 2000);
+  // _GraphPS->init("/data/3/mp-3/webuk/", 133633040, 100, 100);
+  // _GraphPS->init("/data/3/mp-9/uk/", 787801471, 500,  100);
+  // _GraphPS->init("/data/3/mp-9/webuk/", 133633040, 100, 100);
 
-  new_gworker();
+  //new_gworker();
 
-  gserver_thread.join();
+  // gserver_thread.join();
   return 0;
 }

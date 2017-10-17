@@ -63,7 +63,7 @@ using namespace  ::graphps;
 #define COMPRESS_COMMU_LEVEL 1
 #define COMPRESS_CACHE_LEVEL 1
 
-double vertex_num_per_col;
+double _vertex_num_per_col;
 std::array<int32_t, VERTEXCOLNUM> Vertex_Col_StartID;
 std::array<int32_t, VERTEXCOLNUM> Vertex_Col_EndID;
 std::array<int32_t, VERTEXCOLNUM> Vertex_Col_Len;
@@ -106,6 +106,7 @@ int _server_port = SERVER_PORT;
 int16_t _comp_level = COMPRESS_COMMU_LEVEL;
 int _my_rank;
 int _my_col;
+int _my_row;
 int _num_workers;
 int _hostname_len;
 char _hostname[HOST_LEN];
