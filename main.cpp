@@ -67,8 +67,8 @@ int main(int argc, char **argv) {
   // _GraphPS->init("/data/3/mp-9/twitter/", 41652230, 50,  100);
 
   //_GraphPS->init("/home/mapred/twitter.chaos-graphps/", 41652230, 450, 2000);
+  _GraphPS->init("/home/mapred/webuk.chaos-graphps/", 133633040, 900, 2000);
 
-  //_GraphPS->init("/home/mapred/GraphData/twitter/edge2/", 41652250, 294,  2000);
 
 
   //new_gworker();

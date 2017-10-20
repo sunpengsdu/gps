@@ -3,7 +3,6 @@
 
 #include "./include/global.h"
 #include "./include/dataload.h"
-#include <atomic>
 
 class GraphPS {
 public:
@@ -20,10 +19,8 @@ public:
   std::string _DataPath;
   VidDtype _VertexTotalNum;
   VidDtype _VertexAllocatedNum;
-  VidDtype _VertexDstNum;
-  long _EdgeAllocatedNum;
-  long _EdgeAllocatedNumAll[9];
-  std::atomic<long> _EdgeAllocatedNumAll_Atomic[9];
+  VidDtype _VertexDestNum;
+  int64_t _EdgeAllocatedNum;
   int32_t _PartitionTotalNum;
   int32_t _MaxIteration;
   int32_t _PartitionID_Start;
@@ -31,13 +28,12 @@ public:
   double _Vertex_Sparse_Ratio;
   VidDtype _VertexID_Start;
   VidDtype _VertexID_End;
-  VidDtype _VertexID_Start_Dst;
-  VidDtype _VertexID_End_Dst;
+  // VidDtype _VertexID_Start_Dst;
+  // VidDtype _VertexID_End_Dst;
   std::vector<int32_t> _Allocated_Partition;
-  bool* _VertexWhetherDst[9];
-  bool* _VertexWhetherDst_R;
-  bool* _VertexWhetherAllocated[9];
-  bool* _VertexWhetherAllocated_R;
+  std::vector<int32_t> _All_Partition;
+  std::vector<bool> _VertexWhetherAllocated;
+  std::vector<bool> _VertexWhetherDest;
   std::unordered_map<VidDtype, shared_ptr<VertexData>> _VertexData;
   bloom_parameters _bf_parameters;
   std::map<int32_t, bloom_filter> _bf_pool;
@@ -62,6 +58,11 @@ void GraphPS::init_info_basic(std::string DataPath, const VidDtype VertexNum,
   _VertexTotalNum = VertexNum;
   _PartitionTotalNum = PartitionNum;
   _MaxIteration = MaxIteration;
+  for (int i=0; i<PartitionNum; i++) {
+    _All_Partition.push_back(i);
+  }
+  std::shuffle (_All_Partition.begin(), _All_Partition.end(), 
+    std::default_random_engine (0xA5A5A5A5));
 }
 
 void GraphPS::init_info_col() {
@@ -106,7 +107,7 @@ void GraphPS::init_info_row() {
     avg_size_row = total_size_col*1.0/VERTEXROWNUM;
     for (int j=0; j<_PartitionTotalNum; j++) {
       std::string DataPath;
-      DataPath = _DataPath + std::to_string(j);
+      DataPath = _DataPath + std::to_string(_All_Partition[j]);
       DataPath += "-";
       DataPath += std::to_string(i);
       DataPath += ".edge.npy";
@@ -127,7 +128,7 @@ void GraphPS::init_info_row() {
   if (_my_row == 0) {_PartitionID_Start = 0;}
   if (_my_row == VERTEXROWNUM-1) {_PartitionID_End = _PartitionTotalNum;}
   for (int i = _PartitionID_Start; i < _PartitionID_End; i++) {
-      _Allocated_Partition.push_back(i);
+      _Allocated_Partition.push_back(_All_Partition[i]);
   }
   LOG(INFO) << "Rank: " << _my_rank << ", " 
     << "Row: " << _my_row << ", " 
@@ -162,80 +163,41 @@ void GraphPS::init_edge_cache() {
 }
 
 void GraphPS::build_bf() {
-  #pragma omp parallel for num_threads(CMPNUM) schedule(static)
-  for (int32_t t_pid = _PartitionID_Start; t_pid < _PartitionID_End; t_pid++) {
+  int64_t n = 0;
+  #pragma omp parallel for num_threads(CMPNUM) reduction(+:n) schedule(static)
+  for (int32_t i = _PartitionID_Start; i < _PartitionID_End; i++) {
+    int32_t t_pid = _All_Partition[i];
     std::string DataPath;
     DataPath = _DataPath + std::to_string(t_pid);
     DataPath += "-";
     DataPath += std::to_string(_my_col);
     DataPath += ".edge.npy";
-    // LOG(INFO) << DataPath;
     char* EdgeDataNpy = load_edge(t_pid, DataPath);
     int32_t *EdgeData = reinterpret_cast<int32_t*>(EdgeDataNpy);
     int32_t v_num = EdgeData[0];
-    int32_t *p = EdgeData+1;
-    int32_t v=0;
-    int32_t l=0;
+    // int32_t e_num = EdgeData[1];
+    int32_t *p = EdgeData;
+    int32_t v = 0;
+    int32_t l = 0;
+    p += 1;
     for (int i=0; i < v_num; i++) {
-      p++; v = *p;
-      /*
-      size_t sid_hash = std::hash<std::string>{}(std::to_string(v));
-      int node_id = sid_hash%_num_workers;
-      _VertexWhetherDst[node_id][v] = true;
-      */
-
-     
-     int node_id = _my_rank;
-      _VertexWhetherDst[node_id][v] = true;
-     
-
-      p++; l = *p;
+      p++; v = *p; p++; l = *p;
+      if (l > 0) {_VertexWhetherDest[v] = true;}
       for (int k = 0; k < l; k++) {
-      p++;
-      /*
-        size_t sid_hash = std::hash<std::string>{}(std::to_string(v)+"-"+std::to_string(*p));
-        int node_id = sid_hash%_num_workers;
-        _VertexWhetherDst[node_id][v] = true;
-      */
-       
-       /*
-        size_t sid_hash = std::hash<std::string>{}(std::to_string(*p));
-        int node_id = sid_hash%_num_workers;
-        _VertexWhetherDst[node_id][v] = true;
-       */
-
-        // _bf_pool[t_pid].insert(indices[indptr[i] + k]);
-        _EdgeAllocatedNumAll_Atomic[node_id]++;
-        _VertexWhetherAllocated[node_id][*p] = true;
+        p++;
+        _bf_pool[t_pid].insert(*p);
+        n += 1;
+        _VertexWhetherAllocated[*p] = true;
       }
     }
   }
-  bool* _VWAT = new bool[_VertexTotalNum];
-  bool* _VWAT2 = new bool[_VertexTotalNum];
-  for (int i=0; i<_num_workers; i++) {
-    _EdgeAllocatedNumAll[i] = _EdgeAllocatedNumAll_Atomic[i];
-    memset(_VWAT, 0, _VertexTotalNum);
-    memset(_VWAT2, 0, _VertexTotalNum);
-    void* p_send = _VertexWhetherAllocated[i];
-    void* p_recv = _VWAT;
-    void* p_send2 = _VertexWhetherDst[i];
-    void* p_recv2 = _VWAT2;
-    MPI_Reduce(p_send, p_recv, _VertexTotalNum, MPI_C_BOOL, MPI_LOR, i, MPI_COMM_WORLD);
-    MPI_Reduce(p_send2, p_recv2, _VertexTotalNum, MPI_C_BOOL, MPI_LOR, i, MPI_COMM_WORLD);
-    MPI_Reduce(&_EdgeAllocatedNumAll[i], &_EdgeAllocatedNum, 1, MPI_LONG, MPI_SUM, i, MPI_COMM_WORLD);
-    if (_my_rank == i) {
-      for (int j=0; j<_VertexTotalNum; j++) {
-        _VertexWhetherAllocated_R[j] = _VWAT[j];
-        _VertexWhetherDst_R[j] = _VWAT2[j];
-      }
-    }
-  }
+  _EdgeAllocatedNum = n;
 }
 
 void GraphPS::build_vertex_data(VidDtype *min, VidDtype *max) {
   for (VidDtype i=0; i < _VertexTotalNum; i++) {
-    if (_VertexWhetherAllocated_R[i] == true) {
-      // _VertexData[i] = boost::make_shared<VertexData>();
+    if (_VertexWhetherAllocated[i] == true) {
+      _VertexData[i] = boost::make_shared<VertexData>();
       if (i<*min) {*min=i;}
       if (i>*max) {*max=i;}
     }
@@ -244,52 +206,41 @@ void GraphPS::build_vertex_data(VidDtype *min, VidDtype *max) {
 
 void GraphPS::init_bf() {
   _EdgeAllocatedNum = 0;
-  for (int i=0; i<9; i++) {
-    _EdgeAllocatedNumAll[i] = 0;
-    _EdgeAllocatedNumAll_Atomic[i] = 0;
-  }
   _VertexAllocatedNum = 0;
-  _VertexWhetherAllocated_R = new bool[_VertexTotalNum];
-  memset(_VertexWhetherAllocated_R, 0, _VertexTotalNum);
-  _VertexWhetherDst_R = new bool[_VertexTotalNum];
-  memset(_VertexWhetherDst_R, 0, _VertexTotalNum);
-  for (int i=0; i<9; i++) {
-    _VertexWhetherAllocated[i] = new bool[_VertexTotalNum];
-    memset(_VertexWhetherAllocated[i], 0, _VertexTotalNum);
-    _VertexWhetherDst[i] = new bool[_VertexTotalNum];
-    memset(_VertexWhetherDst[i], 0, _VertexTotalNum);
-  }
+  _VertexWhetherAllocated.assign(_VertexTotalNum, false);
+  _VertexWhetherDest.assign(_VertexTotalNum, false);
   _bf_parameters.projected_element_count = 1000000;
   _bf_parameters.false_positive_probability = 0.01;
   _bf_parameters.random_seed = 0xA5A5A5A5;
   if (!_bf_parameters) {assert(1==0);}
   _bf_parameters.compute_optimal_parameters();
   for (int32_t k=_PartitionID_Start; k<_PartitionID_End; k++) {
-    _bf_pool[k] = bloom_filter(_bf_parameters);
+    _bf_pool[_All_Partition[k]] = bloom_filter(_bf_parameters);
   }
   build_bf();
-  VidDtype real_start_vid = 0;
+   
+  VidDtype real_start_vid = _VertexTotalNum;
   VidDtype real_end_vid = 0;
-
   build_vertex_data(&real_start_vid, &real_end_vid);
+  real_end_vid++;
+
   VidDtype sum_of_elems = 0;
-  for (int n=0; n<_VertexTotalNum; n++) {
-     sum_of_elems += _VertexWhetherAllocated_R[n];
+  for (auto n : _VertexWhetherAllocated) {
+     sum_of_elems += n;
   }
-  // assert(sum_of_elems == VidDtype(_VertexData.size()));
-  _VertexAllocatedNum = sum_of_elems;
+  assert(sum_of_elems == VidDtype(_VertexData.size()));
+  sum_of_elems = 0;
+  for (auto n : _VertexWhetherDest) {
+     sum_of_elems += n;
+  }
+  _VertexDestNum = sum_of_elems;
+  _VertexAllocatedNum = _VertexData.size();
   _Vertex_Sparse_Ratio = (_VertexAllocatedNum*1.0/(_VertexID_End-_VertexID_Start));
 
-  sum_of_elems = 0;
-  for (int n=0; n<_VertexTotalNum; n++) {
-     sum_of_elems += _VertexWhetherDst_R[n];
-  }
-  _VertexDstNum = sum_of_elems;
-
   LOG(INFO) << "Rank " << _my_rank << " Manages " << _VertexAllocatedNum 
-    << " V "  << _VertexAllocatedNum*1.0/_VertexTotalNum
+    << "/" << _VertexID_End - _VertexID_Start << " V "  << _Vertex_Sparse_Ratio
     << " " << _EdgeAllocatedNum << " E"
-    << " Updates " << _VertexDstNum*1.0/_VertexTotalNum << " V";
+    << " Updates " << _VertexDestNum*1.0/_VertexTotalNum << " V";
   barrier_workers();
   LOG(INFO) << "Rank " << _my_rank << " Read Vertex From " << real_start_vid << "/" << _VertexID_Start
     << " To " << real_end_vid << "/" << _VertexID_End;
@@ -298,7 +249,8 @@ void GraphPS::init_bf() {
   _Vertex_Sparse_Ratio = sparse_ratio_total/_num_workers;
 }
 
-void GraphPS::init(std::string DataPath, const VidDtype VertexNum, const int32_t PartitionNum, const int32_t MaxIteration) {
+void GraphPS::init(std::string DataPath, const VidDtype VertexNum,
+  const int32_t PartitionNum, const int32_t MaxIteration) {
   assert(_num_workers == VERTEXCOLNUM * VERTEXROWNUM);
   start_time_init();
   init_info_basic(DataPath, VertexNum, PartitionNum, MaxIteration);
