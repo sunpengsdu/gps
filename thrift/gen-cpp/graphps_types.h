@@ -31,9 +31,10 @@ typedef int32_t VdegDtype;
 class VertexData;
 
 typedef struct _VertexData__isset {
-  _VertexData__isset() : value(false), msg(false), indegree(false) {}
+  _VertexData__isset() : value(false), msg(false), state(false), indegree(false) {}
   bool value :1;
   bool msg :1;
+  bool state :1;
   bool indegree :1;
 } _VertexData__isset;
 
@@ -42,12 +43,13 @@ class VertexData : public virtual ::apache::thrift::TBase {
 
   VertexData(const VertexData&);
   VertexData& operator=(const VertexData&);
-  VertexData() : value(0), msg(0), indegree(0) {
+  VertexData() : value(0), msg(0), state(0), indegree(0) {
   }
 
   virtual ~VertexData() throw();
   VvalueDtype value;
   VmsgDtype msg;
+  bool state;
   VdegDtype indegree;
 
   _VertexData__isset __isset;
@@ -56,6 +58,8 @@ class VertexData : public virtual ::apache::thrift::TBase {
 
   void __set_msg(const VmsgDtype val);
 
+  void __set_state(const bool val);
+
   void __set_indegree(const VdegDtype val);
 
   bool operator == (const VertexData & rhs) const
@@ -63,6 +67,8 @@ class VertexData : public virtual ::apache::thrift::TBase {
     if (!(value == rhs.value))
       return false;
     if (!(msg == rhs.msg))
+      return false;
+    if (!(state == rhs.state))
       return false;
     if (__isset.indegree != rhs.__isset.indegree)
       return false;

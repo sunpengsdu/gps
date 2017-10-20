@@ -169,27 +169,25 @@ void GraphPS::build_bf() {
     DataPath += "-";
     DataPath += std::to_string(_my_col);
     DataPath += ".edge.npy";
-    // LOG(INFO) << DataPath;
     char* EdgeDataNpy = load_edge(t_pid, DataPath);
     int32_t *EdgeData = reinterpret_cast<int32_t*>(EdgeDataNpy);
     int32_t v_num = EdgeData[0];
-    int32_t *p = EdgeData+1;
+    int32_t *p = EdgeData+2;
     int32_t v=0;
     int32_t l=0;
     for (int i=0; i < v_num; i++) {
-      p++; v = *p;
-      /*
-      size_t sid_hash = std::hash<std::string>{}(std::to_string(v));
+      v = *p;
+    /*
+      size_t sid_hash = std::hash<std::string>{}(std::to_string(*p));
       int node_id = sid_hash%_num_workers;
-      _VertexWhetherDst[node_id][v] = true;
-      */
-
+      _VertexWhetherDst[node_id][*p] = true;
+    */
      
      int node_id = _my_rank;
       _VertexWhetherDst[node_id][v] = true;
      
-
-      p++; l = *p;
+      p++;
+      l = *p;
       for (int k = 0; k < l; k++) {
       p++;
       /*

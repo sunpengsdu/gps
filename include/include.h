@@ -2,6 +2,7 @@
 #define SYSTEM_INCLUDE_H_
 
 #include "../thrift/gen-cpp/VertexUpdate.h"
+#include "defines.h"
 #include "cnpy.h"
 #include "bloom_filter.hpp"
 #include <thrift/transport/TServerSocket.h>
@@ -22,6 +23,7 @@
 #include <unordered_map>
 #include <tuple>
 #include <chrono>
+#include <random>
 #include <future>
 #include <exception>
 #include <atomic>
@@ -48,20 +50,6 @@ using namespace ::apache::thrift::server;
 using namespace ::apache::thrift::concurrency;
 using boost::shared_ptr;
 using namespace  ::graphps;
-
-#define SERVER_PORT 9090
-#define HOST_LEN 20
-#define COMPRESS
-#define GPS_INF 10000
-#define EDGE_CACHE_SIZE 50*1024 //MB
-#define DENSITY_VALUE 20
-#define BF_THRE 0.001
-#define CMPNUM 23
-#define COMNUM 1
-#define VERTEXCOLNUM 9
-#define VERTEXROWNUM 1
-#define COMPRESS_COMMU_LEVEL 1
-#define COMPRESS_CACHE_LEVEL 1
 
 double _vertex_num_per_col;
 std::array<int32_t, VERTEXCOLNUM> Vertex_Col_StartID;
@@ -117,5 +105,7 @@ int DEFAULT_URBUF_SIZE_SP = 5120;
 int DEFAULT_CRBUF_SIZE_SP = 5120;
 int DEFAULT_UWBUF_SIZE_SP = 5120;
 int DEFAULT_CWBUF_SIZE_SP = 5120;
+
+int COMPRESS_CACHE_LEVEL;
 
 #endif

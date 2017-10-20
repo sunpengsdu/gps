@@ -1,0 +1,17 @@
+#ifndef INCLUDE_DEFINES_H_
+#define INCLUDE_DEFINES_H_
+
+#define SERVER_PORT 9090
+#define HOST_LEN 20
+#define COMPRESS
+#define GPS_INF 10000
+#define EDGE_CACHE_SIZE 0*1024 //MB
+#define DENSITY_VALUE 20
+#define BF_THRE 0.001
+#define CMPNUM 2
+#define COMNUM 2
+#define VERTEXCOLNUM 1
+#define VERTEXROWNUM 9
+#define COMPRESS_COMMU_LEVEL 1
+#define STORE_SPARSE
+#endif
