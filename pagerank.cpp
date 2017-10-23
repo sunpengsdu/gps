@@ -6,6 +6,14 @@ void GraphPS::init_vertex_data() {
 
 }
 
+void GraphPS::comp(int32_t P_ID) {
+
+}
+
+void GraphPS::post_process() {
+  BF_THRE = 0;
+}
+
 class VertexUpdateHandler : virtual public VertexUpdateIf {
  public:
   VertexUpdateHandler() {}
@@ -68,8 +76,8 @@ int main(int argc, char **argv) {
   _GraphPS = boost::make_shared<GraphPS>();
   // Data Path, VertexNum number, Partition number,  Max Iteration
 
-  _GraphPS->init("/home/mapred/twitter.chaos-graphps/", 41652230, 450, 2000);
-  // _GraphPS->init("/home/mapred/webuk.chaos-graphps/", 133633040, 900, 2000);
+  _GraphPS->init("/home/mapred/twitter.chaos-graphps/", 41652230, 450, 5);
+  // _GraphPS->init("/home/mapred/webuk.chaos-graphps/", 133633040, 900, 5);
 
   _GraphPS->run();
 
@@ -80,5 +88,6 @@ int main(int argc, char **argv) {
   //new_gworker();
 
   // gserver_thread.join();
+  stop_time_app();
   return 0;
 }

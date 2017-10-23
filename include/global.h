@@ -55,6 +55,17 @@ void stop_time_comp() {
               (COMP_TIME_END-COMP_TIME_START).count();
 }
 
+void start_time_iter() {
+  ITER_TIME_START = std::chrono::steady_clock::now();
+}
+
+void stop_time_iter() {
+  ITER_TIME_END = std::chrono::steady_clock::now();
+  ITER_TIME = std::chrono::duration_cast<std::chrono::milliseconds>
+              (ITER_TIME_END-ITER_TIME_START).count();
+}
+
+
 
 class TZlibBufferdTransportFactory : public TTransportFactory {
  public:

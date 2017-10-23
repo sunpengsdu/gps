@@ -59,10 +59,13 @@ std::chrono::steady_clock::time_point COMP_TIME_START;
 std::chrono::steady_clock::time_point COMP_TIME_END;
 std::chrono::steady_clock::time_point APP_TIME_START;
 std::chrono::steady_clock::time_point APP_TIME_END;
+std::chrono::steady_clock::time_point ITER_TIME_START;
+std::chrono::steady_clock::time_point ITER_TIME_END;
 
 int64_t INIT_TIME;
 int64_t COMP_TIME;
 int64_t APP_TIME;
+int64_t ITER_TIME;
 struct EdgeCacheData {
   char * data;
   size_t compressed_length;
@@ -96,6 +99,8 @@ int _hostname_len;
 char _hostname[HOST_LEN];
 char *_all_hostname;
 std::map<int, std::string> _map_hosts;
+
+double BF_THRE = 0.001;
 
 int DEFAULT_URBUF_SIZE_SP = 5120;
 int DEFAULT_CRBUF_SIZE_SP = 5120;

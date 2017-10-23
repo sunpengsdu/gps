@@ -7,15 +7,6 @@
 class GraphPS {
 public:
   GraphPS(){};
-//  bool (*_comp)(const int32_t,
-//                std::string,
-//                const int32_t,
-//                T*,
-//                T*,
-//                const int32_t*,
-//                const int32_t*,
-//                const int32_t,
-//                std::vector<bool>&) = NULL;
   std::string _DataPath;
   VidDtype _VertexTotalNum;
   VidDtype _VertexAllocatedNum;
@@ -26,14 +17,18 @@ public:
   int32_t _PartitionID_Start;
   int32_t _PartitionID_End;
   double _Vertex_Need_Ratio;
+  double _Vertex_Update_Ratio;
   std::vector<std::bitset<VERTEXROWNUM*VERTEXCOLNUM>> _VertexToNodes;
   std::vector<int32_t> _Allocated_Partition;
   std::vector<int32_t> _All_Partition;
+  std::unordered_map<int32_t, bool> _Allocated_Partition_State;
   bool* _VertexWhetherAllocated;
   bool* _VertexWhetherDest;
-  std::map<VidDtype, VertexData*> _VertexData;
+  bool* _VertexAllState;
+  bool* _VertexAllState_Tmp;
+  std::unordered_map<VidDtype, VertexData*> _VertexData;
   bloom_parameters _bf_parameters;
-  std::map<int32_t, bloom_filter> _bf_pool;
+  std::unordered_map<int32_t, bloom_filter> _bf_pool;
   void init_info_basic(std::string DataPath, const VidDtype VertexNum,
     const int32_t PartitionNum, const int32_t MaxIteration=10);
   void init_info_col();
@@ -46,9 +41,13 @@ public:
   void init(std::string DataPath, const VidDtype VertexNum,
     const int32_t PartitionNum, const int32_t MaxIteration=10);
   void load_vertex_outdegree();
-  // virtual void init_vertex_data()=0;
   void init_vertex_data();
   void run();
+  void comp(int32_t P_ID);
+  void activate_all_partiton();
+  void activate_partition();
+  void post_process();
+  void log_update_ratio(int32_t step, double* update_ratio);
 };
 
 void GraphPS::init_info_basic(std::string DataPath, const VidDtype VertexNum,
@@ -57,6 +56,7 @@ void GraphPS::init_info_basic(std::string DataPath, const VidDtype VertexNum,
   _VertexTotalNum = VertexNum;
   _PartitionTotalNum = PartitionNum;
   _MaxIteration = MaxIteration;
+  BF_THRE = 0.01;
   for (int i=0; i<PartitionNum; i++) {
     _All_Partition.push_back(i);
   }
@@ -183,6 +183,7 @@ void GraphPS::build_vertex_data() {
   for (VidDtype i=0; i < _VertexTotalNum; i++) {
     if (_VertexWhetherAllocated[i] == true) {
       _VertexData[i] = new VertexData();
+      _VertexData[i]->state = true;
     }
   }
 }
@@ -228,10 +229,15 @@ void GraphPS::init_bf() {
   _VertexAllocatedNum = 0;
   _VertexWhetherAllocated = new bool[_VertexTotalNum];
   _VertexWhetherDest = new bool[_VertexTotalNum];
+  _VertexAllState = new bool[_VertexTotalNum];
+  if (_my_rank == 0) {_VertexAllState_Tmp = new bool[_VertexTotalNum];}
+  else {_VertexAllState_Tmp = NULL;}
+
   for (int i=0; i<_VertexTotalNum; i++) {
     _VertexToNodes.push_back(std::bitset<VERTEXROWNUM*VERTEXCOLNUM>(0));
     _VertexWhetherAllocated[i] = false;
     _VertexWhetherDest[i] = false;
+    _VertexAllState[i] = false;
   }
 
   _bf_parameters.projected_element_count = 1000000;
@@ -279,9 +285,96 @@ void GraphPS::load_vertex_outdegree(){
   npz.destruct();
 }
 
+void GraphPS::activate_all_partiton(){
+  #pragma omp parallel for num_threads(CMPNUM) schedule(static)
+  for (int i=0; i<int(_Allocated_Partition.size()); i++) {
+    _Allocated_Partition_State[_Allocated_Partition[i]] = true;
+  }
+}
+
+void GraphPS::activate_partition() {
+  if (_Vertex_Update_Ratio < BF_THRE) {
+    VidDtype activated_pnum = 0;
+    #pragma omp parallel for num_threads(CMPNUM) reduction(+:activated_pnum) schedule(static)
+    for (int i=0; i<int(_Allocated_Partition.size()); i++){
+      int P_ID = _Allocated_Partition[i];
+      _Allocated_Partition_State[P_ID] = false;
+      for(auto it=_VertexData.begin(); it!=_VertexData.end(); ++it) {
+        if (it->second->state==true && _bf_pool[P_ID].contains(it->first)) {
+          _Allocated_Partition_State[P_ID] = true;
+          activated_pnum++;
+          break;
+        }
+      }
+    }
+  } else {
+    activate_all_partiton();
+  }
+}
+
+void GraphPS::log_update_ratio(int32_t step, double* vertex_update_ratio){
+  VidDtype updated_vertex_num = 0;
+  #pragma omp parallel for num_threads(CMPNUM) reduction(+:updated_vertex_num) schedule(static)
+  for (int i=0; i<_VertexTotalNum; i++) {
+    if (_VertexWhetherAllocated[i] == true && _VertexData[i]->state == true) {
+      _VertexAllState[i] = true;
+      updated_vertex_num++;
+    } else {_VertexAllState[i] = false;}
+  }
+  *vertex_update_ratio = updated_vertex_num*1.0/_VertexAllocatedNum;
+  MPI_Reduce(_VertexAllState, _VertexAllState_Tmp, _VertexTotalNum, MPI_C_BOOL, MPI_LOR, 0, MPI_COMM_WORLD);
+  if (_my_rank==0) {
+    VidDtype sum_of_elems = 0;
+    #pragma omp parallel for num_threads(CMPNUM) reduction(+:sum_of_elems) schedule(static)
+    for (VidDtype i=0; i<_VertexTotalNum; i++) {
+      sum_of_elems += _VertexAllState_Tmp[i];
+    }
+    LOG(INFO) << "Iter " << step << " Updates " << sum_of_elems 
+      << " Vertices " << sum_of_elems*1.0/_VertexTotalNum 
+      << " Total Time " << ITER_TIME;
+  }
+}
+
+int myrandom(int i){return std::rand()%i;}
+
 void GraphPS::run() {
   load_vertex_outdegree();
   init_vertex_data();
+  activate_all_partiton();
+  stop_time_init();
+  barrier_workers();
+  if (_my_rank==0)
+    LOG(INFO) << "Init Time: " << INIT_TIME << " ms";
+  LOG(INFO) << "Rank " << _my_rank << " use " << CMPNUM << " comp threads";
+  int32_t active_partition_num = 0;
+  for (int32_t step = 0; step < _MaxIteration; step++) {
+    start_time_comp();
+    start_time_iter();
+    std::srand(unsigned(std::time(0)));
+    std::random_shuffle(_Allocated_Partition.begin(), _Allocated_Partition.end());
+    active_partition_num = 0;
+    #pragma omp parallel for num_threads(CMPNUM) reduction(+:active_partition_num) schedule(dynamic)
+    for (int i=0; i<int(_Allocated_Partition.size()); i++) {
+      int32_t P_ID = _Allocated_Partition[i];
+      if (_Allocated_Partition_State[P_ID] == false) {
+        continue;
+      } else {
+        active_partition_num++;
+        comp(P_ID);
+      }
+    }
+    stop_time_comp();
+    barrier_workers();
+    post_process();
+    barrier_workers();
+    stop_time_iter();
+    log_update_ratio(step, &_Vertex_Update_Ratio);
+    activate_partition();
+    barrier_workers();
+    LOG(INFO) << "Iter " << step << " Rank " << _my_rank 
+      << " Time " << COMP_TIME << " ms" 
+      << " PNUM " << active_partition_num;
+  }
 }
 
 #endif
