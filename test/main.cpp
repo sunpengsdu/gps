@@ -64,12 +64,13 @@ int main(int argc, char **argv) {
   sleep_ms(10);
   _GraphPS = boost::make_shared<GraphPS>();
   // Data Path, VertexNum number, Partition number,  Max Iteration
-  // _GraphPS->init("/data/3/mp-9/twitter/", 41652230, 50,  100);
 
   //_GraphPS->init("/home/mapred/twitter.chaos-graphps/", 41652230, 450, 2000);
-  _GraphPS->init("/home/mapred/webuk.chaos-graphps/", 133633040, 900, 2000);
+  // _GraphPS->init("/home/mapred/webuk.chaos-graphps/", 133633040, 900, 2000);
 
 
+  // _GraphPS->init("/home/mapred/ps-9/webuk.chaos-graphps/", 133633040, 100, 2000);
+  _GraphPS->init("/home/mapred/ps-9/twitter.chaos-graphps/twitter/", 41652230, 50, 2000);
 
   //new_gworker();
 

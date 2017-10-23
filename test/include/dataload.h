@@ -1,5 +1,5 @@
-#ifndef INCLUDE_DATALOAD_H_
-#define INCLUDE_DATALOAD_H_
+#ifndef SYSTEM_DATALOAD_H_
+#define SYSTEM_DATALOAD_H_
 
 #include "include.h"
 

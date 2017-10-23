@@ -1,5 +1,5 @@
-#ifndef INCLUDE_GLOBAL_H_
-#define INCLUDE_GLOBAL_H_
+#ifndef SYSTEM_GLOBAL_H_
+#define SYSTEM_GLOBAL_H_
 
 #include "include.h"
 #include "dataload.h"

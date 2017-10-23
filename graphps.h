@@ -25,16 +25,13 @@ public:
   int32_t _MaxIteration;
   int32_t _PartitionID_Start;
   int32_t _PartitionID_End;
-  double _Vertex_Sparse_Ratio;
-  VidDtype _VertexID_Start;
-  VidDtype _VertexID_End;
-  // VidDtype _VertexID_Start_Dst;
-  // VidDtype _VertexID_End_Dst;
+  double _Vertex_Need_Ratio;
+  std::vector<std::bitset<VERTEXROWNUM*VERTEXCOLNUM>> _VertexToNodes;
   std::vector<int32_t> _Allocated_Partition;
   std::vector<int32_t> _All_Partition;
-  std::vector<bool> _VertexWhetherAllocated;
-  std::vector<bool> _VertexWhetherDest;
-  std::unordered_map<VidDtype, shared_ptr<VertexData>> _VertexData;
+  bool* _VertexWhetherAllocated;
+  bool* _VertexWhetherDest;
+  std::map<VidDtype, VertexData*> _VertexData;
   bloom_parameters _bf_parameters;
   std::map<int32_t, bloom_filter> _bf_pool;
   void init_info_basic(std::string DataPath, const VidDtype VertexNum,
@@ -43,13 +40,15 @@ public:
   void init_info_row();
   void init_bf();
   void build_bf();
-  void build_vertex_data(VidDtype* max, VidDtype* min);
+  void build_vertex_data();
+  void build_vertex_node();
   void init_edge_cache();
   void init(std::string DataPath, const VidDtype VertexNum,
     const int32_t PartitionNum, const int32_t MaxIteration=10);
-  // virtual void init_vertex()=0;
-  void init_vertex(){};
-  void run() {};
+  void load_vertex_outdegree();
+  // virtual void init_vertex_data()=0;
+  void init_vertex_data();
+  void run();
 };
 
 void GraphPS::init_info_basic(std::string DataPath, const VidDtype VertexNum,
@@ -61,30 +60,17 @@ void GraphPS::init_info_basic(std::string DataPath, const VidDtype VertexNum,
   for (int i=0; i<PartitionNum; i++) {
     _All_Partition.push_back(i);
   }
-  std::shuffle (_All_Partition.begin(), _All_Partition.end(), 
+  std::shuffle (_All_Partition.begin(), _All_Partition.end(),
     std::default_random_engine (0xA5A5A5A5));
 }
 
 void GraphPS::init_info_col() {
   _my_col = _my_rank%VERTEXCOLNUM;
-  _vertex_num_per_col = _VertexTotalNum*1.0/VERTEXCOLNUM;
-  for (int i=0; i<VERTEXCOLNUM; i++) {
-    Vertex_Col_StartID[i] = std::ceil(i*_vertex_num_per_col);
-    Vertex_Col_EndID[i] = std::ceil((i+1)*_vertex_num_per_col);
-    Vertex_Col_Len[i] = Vertex_Col_EndID[i] - Vertex_Col_StartID[i];
-  }
-  _VertexID_Start = Vertex_Col_StartID[_my_col];
-  _VertexID_End = Vertex_Col_EndID[_my_col];
   for (int i=0; i<_num_workers; i++) {
     _col_to_ranks[i%VERTEXCOLNUM].push_back(i);
   }
   if (_my_rank == 0) {
-    LOG(INFO) << "Vertex Col Information";
-    for (int i=0; i<VERTEXCOLNUM; i++) {
-      LOG(INFO) << "Col " << i << ": "
-        << "From " << Vertex_Col_StartID[i] << ", " 
-        << "To " << Vertex_Col_EndID[i];
-    }
+    LOG(INFO) << "Vertex Col Num: " << VERTEXCOLNUM;
   }
   barrier_workers();
 }
@@ -130,9 +116,9 @@ void GraphPS::init_info_row() {
   for (int i = _PartitionID_Start; i < _PartitionID_End; i++) {
       _Allocated_Partition.push_back(_All_Partition[i]);
   }
-  LOG(INFO) << "Rank: " << _my_rank << ", " 
-    << "Row: " << _my_row << ", " 
-    << "Col: " << _my_col << ", " 
+  LOG(INFO) << "Rank: " << _my_rank << ", "
+    << "Row: " << _my_row << ", "
+    << "Col: " << _my_col << ", "
     << "Partition From " << _PartitionID_Start << ", to " << _PartitionID_End;
   barrier_workers();
 }
@@ -147,9 +133,9 @@ void GraphPS::init_edge_cache() {
     _Uncompressed_Buffer_Lock[i] = 0;
     _Uncompressed_Buffer_Len[i] = 0;
   }
-  int32_t data_size = GetDataSize(_DataPath) * 1.0 / 1024 / 1024 / 1024; //GB 
+  int32_t data_size = GetDataSize(_DataPath) * 1.0 / 1024 / 1024 / 1024; //GB
   int32_t cache_size = _num_workers * EDGE_CACHE_SIZE / 1024; //GB
-  if (data_size <= cache_size*1.1) 
+  if (data_size <= cache_size*1.1)
     COMPRESS_CACHE_LEVEL = 0;
   else if (data_size * 0.5 <= cache_size*1.1)
     COMPRESS_CACHE_LEVEL = 1;
@@ -184,9 +170,8 @@ void GraphPS::build_bf() {
       p++; v = *p; p++; l = *p;
       if (l > 0) {_VertexWhetherDest[v] = true;}
       for (int k = 0; k < l; k++) {
-        p++;
+        p++; n++;
         _bf_pool[t_pid].insert(*p);
-        n += 1;
         _VertexWhetherAllocated[*p] = true;
       }
     }
@@ -194,21 +179,61 @@ void GraphPS::build_bf() {
   _EdgeAllocatedNum = n;
 }
 
-void GraphPS::build_vertex_data(VidDtype *min, VidDtype *max) {
+void GraphPS::build_vertex_data() {
   for (VidDtype i=0; i < _VertexTotalNum; i++) {
     if (_VertexWhetherAllocated[i] == true) {
-      _VertexData[i] = boost::make_shared<VertexData>();
-      if (i<*min) {*min=i;}
-      if (i>*max) {*max=i;}
+      _VertexData[i] = new VertexData();
     }
   }
+}
+
+void GraphPS::build_vertex_node() {
+  VidDtype sum_of_elems = 0;
+  for (int i=0; i<_VertexTotalNum; i++) {
+     sum_of_elems += _VertexWhetherAllocated[i];
+  }
+  assert(sum_of_elems == VidDtype(_VertexData.size()));
+  _VertexAllocatedNum = sum_of_elems;
+  sum_of_elems = 0;
+  for (int i=0; i<_VertexTotalNum; i++) {
+     sum_of_elems += _VertexWhetherDest[i];
+  }
+  _VertexDestNum = sum_of_elems;
+
+  _Vertex_Need_Ratio = (_VertexAllocatedNum*1.0/(_VertexTotalNum));
+  bool* vertex_whether_allocated = new bool[_VertexTotalNum];
+  for (int i=0; i<_num_workers; i++) {
+    if (_my_rank == i) {
+      memcpy(vertex_whether_allocated, _VertexWhetherAllocated, _VertexTotalNum);
+    }
+    MPI_Bcast(vertex_whether_allocated, _VertexTotalNum, MPI_C_BOOL, i, MPI_COMM_WORLD);
+    for (int j=0; j<_VertexTotalNum; j++) {
+      if (vertex_whether_allocated[j] == true) {
+        _VertexToNodes[j][i] = true;
+      } else {
+        _VertexToNodes[j][i] = false;
+      }
+    }
+  }
+  delete[] vertex_whether_allocated;
+  sum_of_elems = 0;
+  for (int i=0; i<_VertexTotalNum; i++) {
+    sum_of_elems += _VertexToNodes[i][_my_rank];
+  }
+  assert(sum_of_elems == _VertexAllocatedNum);
 }
 
 void GraphPS::init_bf() {
   _EdgeAllocatedNum = 0;
   _VertexAllocatedNum = 0;
-  _VertexWhetherAllocated.assign(_VertexTotalNum, false);
-  _VertexWhetherDest.assign(_VertexTotalNum, false);
+  _VertexWhetherAllocated = new bool[_VertexTotalNum];
+  _VertexWhetherDest = new bool[_VertexTotalNum];
+  for (int i=0; i<_VertexTotalNum; i++) {
+    _VertexToNodes.push_back(std::bitset<VERTEXROWNUM*VERTEXCOLNUM>(0));
+    _VertexWhetherAllocated[i] = false;
+    _VertexWhetherDest[i] = false;
+  }
+
   _bf_parameters.projected_element_count = 1000000;
   _bf_parameters.false_positive_probability = 0.01;
   _bf_parameters.random_seed = 0xA5A5A5A5;
@@ -218,35 +243,17 @@ void GraphPS::init_bf() {
     _bf_pool[_All_Partition[k]] = bloom_filter(_bf_parameters);
   }
   build_bf();
-   
-  VidDtype real_start_vid = _VertexTotalNum;
-  VidDtype real_end_vid = 0;
-  build_vertex_data(&real_start_vid, &real_end_vid);
-  real_end_vid++;
+  build_vertex_data();
+  build_vertex_node();
 
-  VidDtype sum_of_elems = 0;
-  for (auto n : _VertexWhetherAllocated) {
-     sum_of_elems += n;
-  }
-  assert(sum_of_elems == VidDtype(_VertexData.size()));
-  sum_of_elems = 0;
-  for (auto n : _VertexWhetherDest) {
-     sum_of_elems += n;
-  }
-  _VertexDestNum = sum_of_elems;
-  _VertexAllocatedNum = _VertexData.size();
-  _Vertex_Sparse_Ratio = (_VertexAllocatedNum*1.0/(_VertexID_End-_VertexID_Start));
-
-  LOG(INFO) << "Rank " << _my_rank << " Manages " << _VertexAllocatedNum 
-    << "/" << _VertexID_End - _VertexID_Start << " V "  << _Vertex_Sparse_Ratio
+  LOG(INFO) << "Rank " << _my_rank << " Manages " << _VertexAllocatedNum
+    << " V "  << _Vertex_Need_Ratio
     << " " << _EdgeAllocatedNum << " E"
     << " Updates " << _VertexDestNum*1.0/_VertexTotalNum << " V";
   barrier_workers();
-  LOG(INFO) << "Rank " << _my_rank << " Read Vertex From " << real_start_vid << "/" << _VertexID_Start
-    << " To " << real_end_vid << "/" << _VertexID_End;
-  double sparse_ratio_total = 0;
-  MPI_Allreduce(&_Vertex_Sparse_Ratio, &sparse_ratio_total, 1, MPI_DOUBLE, MPI_SUM,  MPI_COMM_WORLD);
-  _Vertex_Sparse_Ratio = sparse_ratio_total/_num_workers;
+  double need_ratio_total = 0;
+  MPI_Allreduce(&_Vertex_Need_Ratio, &need_ratio_total, 1, MPI_DOUBLE, MPI_SUM,  MPI_COMM_WORLD);
+  _Vertex_Need_Ratio = need_ratio_total/_num_workers;
 }
 
 void GraphPS::init(std::string DataPath, const VidDtype VertexNum,
@@ -260,5 +267,21 @@ void GraphPS::init(std::string DataPath, const VidDtype VertexNum,
   init_bf();
 }
 
+void GraphPS::load_vertex_outdegree(){
+  std::string vout_path = _DataPath + "outdegree.npy";
+  cnpy::NpyArray npz = cnpy::npy_load(vout_path);
+  int32_t *data = reinterpret_cast<int32_t*>(npz.data);
+  for (int i=0; i<_VertexTotalNum; i++) {
+    if (_VertexWhetherAllocated[i] == true) {
+      _VertexData[i]->outdegree = data[i];
+    }
+  }
+  npz.destruct();
+}
+
+void GraphPS::run() {
+  load_vertex_outdegree();
+  init_vertex_data();
+}
 
 #endif

@@ -1,5 +1,5 @@
-#ifndef INCLUDE_INCLUDE_H_
-#define INCLUDE_INCLUDE_H_
+#ifndef SYSTEM_INCLUDE_H_
+#define SYSTEM_INCLUDE_H_
 
 #include "../thrift/gen-cpp/VertexUpdate.h"
 #include "defines.h"
@@ -26,7 +26,6 @@
 #include <random>
 #include <future>
 #include <exception>
-#include <bitset>
 #include <atomic>
 #include <algorithm>
 #include <vector>
@@ -52,7 +51,12 @@ using namespace ::apache::thrift::concurrency;
 using boost::shared_ptr;
 using namespace  ::graphps;
 
+double _vertex_num_per_col;
+std::array<int32_t, VERTEXCOLNUM> Vertex_Col_StartID;
+std::array<int32_t, VERTEXCOLNUM> Vertex_Col_EndID;
+std::array<int32_t, VERTEXCOLNUM> Vertex_Col_Len;
 std::array<std::vector<int>, VERTEXCOLNUM> _col_to_ranks;
+
 std::chrono::steady_clock::time_point INIT_TIME_START;
 std::chrono::steady_clock::time_point INIT_TIME_END;
 std::chrono::steady_clock::time_point COMP_TIME_START;

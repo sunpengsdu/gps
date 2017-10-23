@@ -30,9 +30,9 @@ void VertexData::__set_state(const bool val) {
   this->state = val;
 }
 
-void VertexData::__set_outdegree(const VdegDtype val) {
-  this->outdegree = val;
-__isset.outdegree = true;
+void VertexData::__set_indegree(const VdegDtype val) {
+  this->indegree = val;
+__isset.indegree = true;
 }
 
 uint32_t VertexData::read(::apache::thrift::protocol::TProtocol* iprot) {
@@ -82,8 +82,8 @@ uint32_t VertexData::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 4:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          xfer += iprot->readI32(this->outdegree);
-          this->__isset.outdegree = true;
+          xfer += iprot->readI32(this->indegree);
+          this->__isset.indegree = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -117,9 +117,9 @@ uint32_t VertexData::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeBool(this->state);
   xfer += oprot->writeFieldEnd();
 
-  if (this->__isset.outdegree) {
-    xfer += oprot->writeFieldBegin("outdegree", ::apache::thrift::protocol::T_I32, 4);
-    xfer += oprot->writeI32(this->outdegree);
+  if (this->__isset.indegree) {
+    xfer += oprot->writeFieldBegin("indegree", ::apache::thrift::protocol::T_I32, 4);
+    xfer += oprot->writeI32(this->indegree);
     xfer += oprot->writeFieldEnd();
   }
   xfer += oprot->writeFieldStop();
@@ -132,7 +132,7 @@ void swap(VertexData &a, VertexData &b) {
   swap(a.value, b.value);
   swap(a.msg, b.msg);
   swap(a.state, b.state);
-  swap(a.outdegree, b.outdegree);
+  swap(a.indegree, b.indegree);
   swap(a.__isset, b.__isset);
 }
 
@@ -140,14 +140,14 @@ VertexData::VertexData(const VertexData& other0) {
   value = other0.value;
   msg = other0.msg;
   state = other0.state;
-  outdegree = other0.outdegree;
+  indegree = other0.indegree;
   __isset = other0.__isset;
 }
 VertexData& VertexData::operator=(const VertexData& other1) {
   value = other1.value;
   msg = other1.msg;
   state = other1.state;
-  outdegree = other1.outdegree;
+  indegree = other1.indegree;
   __isset = other1.__isset;
   return *this;
 }
@@ -157,7 +157,7 @@ void VertexData::printTo(std::ostream& out) const {
   out << "value=" << to_string(value);
   out << ", " << "msg=" << to_string(msg);
   out << ", " << "state=" << to_string(state);
-  out << ", " << "outdegree="; (__isset.outdegree ? (out << to_string(outdegree)) : (out << "<null>"));
+  out << ", " << "indegree="; (__isset.indegree ? (out << to_string(indegree)) : (out << "<null>"));
   out << ")";
 }
 

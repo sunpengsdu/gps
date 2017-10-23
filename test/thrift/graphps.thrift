@@ -9,7 +9,7 @@ struct VertexData {
   1: VvalueDtype value,
   2: VmsgDtype msg,
   3: bool state,
-  4: optional VdegDtype outdegree,
+  4: optional VdegDtype indegree,
 }
 
 service VertexUpdate {
