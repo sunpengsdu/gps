@@ -3,14 +3,13 @@
 
 #define SERVER_PORT 19090
 #define HOST_LEN 20
-#define COMPRESS
+//#define COMPRESS
 #define GPS_INF 10000
 #define EDGE_CACHE_SIZE 50*1024 //MB
-#define SPARSE_COMMU 1.2
 #define CMPNUM 22
 #define COMNUM 12
 #define VERTEXCOLNUM 9
 #define VERTEXROWNUM 1
-#define COMPRESS_COMMU_LEVEL 0
+#define COMPRESS_COMMU_LEVEL 1
 #define CAS __sync_bool_compare_and_swap
 #endif

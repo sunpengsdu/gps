@@ -27,14 +27,9 @@ class VertexUpdateHandler : virtual public VertexUpdateIf {
     printf("ping\n");
   }
 
-  int32_t update_vertex_sparse(const int32_t pid, const VidDtype vlen, const std::vector<VidDtype> & vid, const std::vector<VmsgDtype> & vmsg) {
+  int32_t update_vertex(const VidDtype len, const std::vector<VidDtype> & vid, const std::vector<VmsgDtype> & vmsg) {
     // Your implementation goes here
-    printf("update_vertex_sparse\n");
-  }
-
-  int32_t update_vertex_dense(const int32_t pid, const VidDtype vlen, const VidDtype start_id, const std::vector<VmsgDtype> & vmsg) {
-    // Your implementation goes here
-    printf("update_vertex_dense\n");
+    printf("update_vertex\n");
   }
 
 };

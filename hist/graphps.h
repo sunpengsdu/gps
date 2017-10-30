@@ -18,17 +18,16 @@ public:
   int32_t _PartitionID_End;
   double _Vertex_Need_Ratio;
   double _Vertex_Update_Ratio;
+  std::vector<std::bitset<VERTEXROWNUM*VERTEXCOLNUM>> _VertexToNodes;
   std::vector<int32_t> _Allocated_Partition;
   std::vector<int32_t> _All_Partition;
-  std::unordered_map<int32_t, bool> _Allocated_Partition_State;
+  std::map<int32_t, bool> _Allocated_Partition_State;
   bool* _VertexWhetherAllocated;
   bool* _VertexWhetherDest;
+  bool* _VertexAllState;
   bool* _VertexAllState_Tmp;
-  // std::vector<VertexData*> _VertexData;
-  VertexData* _VertexData;
-  VidDtype _VertexStartID;
-  VidDtype _VertexEndID;
-  std::unordered_map<int32_t, bool> _PartitionLock;
+  std::unordered_map<VidDtype, VertexData*> _VertexData;
+  std::unordered_map<VidDtype, bool> _VertexLock;
   bloom_parameters _bf_parameters;
   std::map<int32_t, bloom_filter> _bf_pool;
   void init_info_basic(std::string DataPath, const VidDtype VertexNum,
@@ -52,8 +51,7 @@ public:
   void post_process();
   void log_update_ratio(int32_t step, double* update_ratio);
   int32_t* load_partition(int32_t P_ID);
-  void send_msg_sparse(int32_t p_id, std::vector<VidDtype>& vid_vec, std::vector<VmsgDtype>& vmsg_vec, VidDtype start_id);
-  void send_msg_dense(int32_t p_id, std::vector<VmsgDtype>& vmsg_vec, VidDtype start_id);
+  void send_msg(std::vector<VidDtype>& vid_vec, std::vector<VmsgDtype>& vmsg_vec);
 };
 
 void GraphPS::init_info_basic(std::string DataPath, const VidDtype VertexNum,
@@ -171,7 +169,7 @@ void GraphPS::build_bf() {
     int32_t *p = EdgeData;
     int32_t v = 0;
     int32_t l = 0;
-    p += 3;
+    p += 1;
     for (int i=0; i < v_num; i++) {
       p++; v = *p; p++; l = *p;
       if (l > 0) {_VertexWhetherDest[v] = true;}
@@ -186,14 +184,12 @@ void GraphPS::build_bf() {
 }
 
 void GraphPS::build_vertex_data() {
-  _VertexStartID = _col_split[_my_col];
-  _VertexEndID = _col_split[_my_col+1];
-  _VertexData = new VertexData[_VertexEndID - _VertexStartID];
-  for (VidDtype i=0; i < _VertexEndID - _VertexStartID; i++) {
-    _VertexData[i].state = true;
-  }
-  for (int32_t i=0; i < int(_Allocated_Partition.size()); i++) {
-    _PartitionLock[_Allocated_Partition[i]] = false;
+  for (VidDtype i=0; i < _VertexTotalNum; i++) {
+    if (_VertexWhetherAllocated[i] == true) {
+      _VertexData[i] = new VertexData();
+      _VertexData[i]->state = true;
+      _VertexLock[i] = false;
+    }
   }
 }
 
@@ -202,13 +198,35 @@ void GraphPS::build_vertex_node() {
   for (int i=0; i<_VertexTotalNum; i++) {
      sum_of_elems += _VertexWhetherAllocated[i];
   }
+  assert(sum_of_elems == VidDtype(_VertexData.size()));
   _VertexAllocatedNum = sum_of_elems;
   sum_of_elems = 0;
   for (int i=0; i<_VertexTotalNum; i++) {
      sum_of_elems += _VertexWhetherDest[i];
   }
   _VertexDestNum = sum_of_elems;
+
   _Vertex_Need_Ratio = (_VertexAllocatedNum*1.0/(_VertexTotalNum));
+  bool* vertex_whether_allocated = new bool[_VertexTotalNum];
+  for (int i=0; i<_num_workers; i++) {
+    if (_my_rank == i) {
+      memcpy(vertex_whether_allocated, _VertexWhetherAllocated, _VertexTotalNum*sizeof(bool));
+    }
+    MPI_Bcast(vertex_whether_allocated, _VertexTotalNum, MPI_C_BOOL, i, MPI_COMM_WORLD);
+    for (int j=0; j<_VertexTotalNum; j++) {
+      if (vertex_whether_allocated[j] == true) {
+        _VertexToNodes[j][i] = true;
+      } else {
+        _VertexToNodes[j][i] = false;
+      }
+    }
+  }
+  delete[] vertex_whether_allocated;
+  sum_of_elems = 0;
+  for (int i=0; i<_VertexTotalNum; i++) {
+    sum_of_elems += _VertexToNodes[i][_my_rank];
+  }
+  assert(sum_of_elems == _VertexAllocatedNum);
 }
 
 void GraphPS::init_bf() {
@@ -216,12 +234,15 @@ void GraphPS::init_bf() {
   _VertexAllocatedNum = 0;
   _VertexWhetherAllocated = new bool[_VertexTotalNum];
   _VertexWhetherDest = new bool[_VertexTotalNum];
+  _VertexAllState = new bool[_VertexTotalNum];
   if (_my_rank == 0) {_VertexAllState_Tmp = new bool[_VertexTotalNum];}
   else {_VertexAllState_Tmp = NULL;}
 
   for (int i=0; i<_VertexTotalNum; i++) {
+    _VertexToNodes.push_back(std::bitset<VERTEXROWNUM*VERTEXCOLNUM>(0));
     _VertexWhetherAllocated[i] = false;
     _VertexWhetherDest[i] = false;
+    _VertexAllState[i] = false;
   }
 
   _bf_parameters.projected_element_count = 800000;
@@ -236,7 +257,7 @@ void GraphPS::init_bf() {
   build_vertex_data();
   build_vertex_node();
 
-  LOG(INFO) << "Rank " << _my_rank << " Manages " << _VertexAllocatedNum << "/" << _VertexEndID - _VertexStartID
+  LOG(INFO) << "Rank " << _my_rank << " Manages " << _VertexAllocatedNum
     << " V "  << _Vertex_Need_Ratio
     << " " << _EdgeAllocatedNum << " E"
     << " Updates " << _VertexDestNum*1.0/_VertexTotalNum << " V";
@@ -244,8 +265,6 @@ void GraphPS::init_bf() {
   double need_ratio_total = 0;
   MPI_Allreduce(&_Vertex_Need_Ratio, &need_ratio_total, 1, MPI_DOUBLE, MPI_SUM,  MPI_COMM_WORLD);
   _Vertex_Need_Ratio = need_ratio_total/_num_workers;
-  delete[] _VertexWhetherAllocated;
-  delete[] _VertexWhetherDest;
 }
 
 void GraphPS::init(std::string DataPath, const VidDtype VertexNum,
@@ -264,8 +283,8 @@ void GraphPS::load_vertex_outdegree(){
   cnpy::NpyArray npz = cnpy::npy_load(vout_path);
   int32_t *data = reinterpret_cast<int32_t*>(npz.data);
   for (int i=0; i<_VertexTotalNum; i++) {
-    if (get_col_id(i) == _my_col) {
-      _VertexData[i - _VertexStartID].outdegree = data[i];
+    if (_VertexWhetherAllocated[i] == true) {
+      _VertexData[i]->outdegree = data[i];
     }
   }
   npz.destruct();
@@ -284,32 +303,38 @@ void GraphPS::activate_partition() {
     for (int i=0; i<int(_Allocated_Partition.size()); i++){
       int P_ID = _Allocated_Partition[i];
       _Allocated_Partition_State[P_ID] = false;
-      for (int j=0; j<_VertexEndID-_VertexStartID; j++)
-        if (_VertexData[j].state==true && _bf_pool[P_ID].contains(j+_VertexStartID)) {
+      for(auto it=_VertexData.begin(); it!=_VertexData.end(); ++it) {
+        if (it->second->state==true && _bf_pool[P_ID].contains(it->first)) {
           _Allocated_Partition_State[P_ID] = true;
           activated_pnum++;
           break;
         }
       }
-    } else {
-      activate_all_partiton();
+    }
+  } else {
+    activate_all_partiton();
   }
 }
 
 void GraphPS::log_update_ratio(int32_t step, double* vertex_update_ratio){
-  long updated_vertex_num = 0;
+  VidDtype updated_vertex_num = 0;
   #pragma omp parallel for num_threads(CMPNUM) reduction(+:updated_vertex_num) schedule(static)
-  for (int i=0; i<_VertexEndID-_VertexStartID; i++) {
-    if (_VertexData[i].state == true) {
+  for (int i=0; i<_VertexTotalNum; i++) {
+    if (_VertexWhetherAllocated[i] == true && _VertexData[i]->state == true) {
+      _VertexAllState[i] = true;
       updated_vertex_num++;
-    } 
+    } else {_VertexAllState[i] = false;}
   }
-  *vertex_update_ratio = updated_vertex_num*1.0/(_VertexEndID - _VertexStartID);
-  long updated_vertex_num_total = 0;
-  MPI_Reduce(&updated_vertex_num, &updated_vertex_num_total, 1, MPI_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
+  *vertex_update_ratio = updated_vertex_num*1.0/_VertexAllocatedNum;
+  MPI_Reduce(_VertexAllState, _VertexAllState_Tmp, _VertexTotalNum, MPI_C_BOOL, MPI_LOR, 0, MPI_COMM_WORLD);
   if (_my_rank==0) {
-    LOG(INFO) << "Iter " << step << " Updates " << updated_vertex_num_total
-      << " Vertices " << updated_vertex_num_total*1.0/_VertexTotalNum 
+    VidDtype sum_of_elems = 0;
+    #pragma omp parallel for num_threads(CMPNUM) reduction(+:sum_of_elems) schedule(static)
+    for (VidDtype i=0; i<_VertexTotalNum; i++) {
+      sum_of_elems += _VertexAllState_Tmp[i];
+    }
+    LOG(INFO) << "Iter " << step << " Updates " << sum_of_elems 
+      << " Vertices " << sum_of_elems*1.0/_VertexTotalNum 
       << " Total Time " << ITER_TIME;
   }
 }
@@ -327,62 +352,49 @@ int32_t* GraphPS::load_partition(int32_t P_ID){
   return EdgeData;
 }
 
-void GraphPS::send_msg_sparse(int32_t p_id, std::vector<VidDtype>& vid_vec, std::vector<VmsgDtype>& vmsg_vec, VidDtype start_id) {
+void GraphPS::send_msg(std::vector<VidDtype>& vid_vec, std::vector<VmsgDtype>& vmsg_vec) {
+  std::vector<int> worker_vec;
+  for (int i=0; i<_num_workers; i++) {
+    worker_vec.push_back(i);
+  }
+  srand(time(0)+_my_rank);
+  std::random_shuffle(worker_vec.begin(), worker_vec.end());
+  VidDtype len=0;
   std::vector<VidDtype> vid_send;
   std::vector<VmsgDtype> vmsg_send;
-  int32_t col_id = get_col_id(start_id);
-  int32_t node_id = _col_to_ranks[col_id][0];
-
-  shared_ptr<TTransport> socket(new TSocket(_map_hosts[node_id], _server_port));
-  #ifdef COMPRESS
-  shared_ptr<TTransport> bufferdtransport(new TBufferedTransport(socket));
-  shared_ptr<TZlibTransport> transport(new TZlibTransport(bufferdtransport,
-    DEFAULT_URBUF_SIZE_SP,  DEFAULT_CRBUF_SIZE_SP,
-    DEFAULT_UWBUF_SIZE_SP, DEFAULT_CWBUF_SIZE_SP, _comp_level));
-  #else
-  shared_ptr<TTransport> transport(new TBufferedTransport(socket));
-  #endif
-  shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
-  shared_ptr<VertexUpdateClient> client(new VertexUpdateClient(protocol));
-
-  try {
-    transport->open();
-    client->update_vertex_sparse(p_id, vid_vec.size(), std::ref(vid_vec), std::ref(vmsg_vec));
-    transport->close();
-  } catch (TException& tx) {
-    LOG(INFO) << "ERROR: " << tx.what() << std::endl;
-    exit(0);
+  for (int node_id : worker_vec) {
+    len = 0;
+    vid_send.clear();
+    vmsg_send.clear();
+    for (int j=0; j<int(vid_vec.size()); j++) {
+      if (_VertexToNodes[vid_vec[j]][node_id] == true) {
+        vid_send.push_back(vid_vec[j]);
+        vmsg_send.push_back(vmsg_vec[j]);
+        len++;
+      }
+    }
+    if (vid_vec.size() == 0) {continue;}
+    shared_ptr<TTransport> socket(new TSocket(_map_hosts[node_id], _server_port));
+    #ifdef COMPRESS
+    shared_ptr<TTransport> bufferdtransport(new TBufferedTransport(socket));
+    shared_ptr<TZlibTransport> transport(new TZlibTransport(bufferdtransport,
+      DEFAULT_URBUF_SIZE_SP,  DEFAULT_CRBUF_SIZE_SP,
+      DEFAULT_UWBUF_SIZE_SP, DEFAULT_CWBUF_SIZE_SP, _comp_level));
+    #else
+    shared_ptr<TTransport> transport(new TBufferedTransport(socket));
+    #endif
+    shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+    shared_ptr<VertexUpdateClient> client(new VertexUpdateClient(protocol));
+    try {
+      transport->open();
+      client->update_vertex(len, std::ref(vid_send), std::ref(vmsg_send));
+      transport->close();
+    } catch (TException& tx) {
+      LOG(INFO) << "ERROR: " << tx.what() << std::endl;
+      exit(0);
+    }
   }
 }
-
-void GraphPS::send_msg_dense(int32_t p_id, std::vector<VmsgDtype>& vmsg_vec, VidDtype start_id) {
-  std::vector<VidDtype> vid_send;
-  std::vector<VmsgDtype> vmsg_send;
-  int32_t col_id = get_col_id(start_id);
-  int32_t node_id = _col_to_ranks[col_id][0];
-
-  shared_ptr<TTransport> socket(new TSocket(_map_hosts[node_id], _server_port));
-  #ifdef COMPRESS
-  shared_ptr<TTransport> bufferdtransport(new TBufferedTransport(socket));
-  shared_ptr<TZlibTransport> transport(new TZlibTransport(bufferdtransport,
-    DEFAULT_URBUF_SIZE_SP,  DEFAULT_CRBUF_SIZE_SP,
-    DEFAULT_UWBUF_SIZE_SP, DEFAULT_CWBUF_SIZE_SP, _comp_level));
-  #else
-  shared_ptr<TTransport> transport(new TBufferedTransport(socket));
-  #endif
-  shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
-  shared_ptr<VertexUpdateClient> client(new VertexUpdateClient(protocol));
-
-  try {
-    transport->open();
-    client->update_vertex_dense(p_id, vmsg_vec.size(), start_id, std::ref(vmsg_vec));
-    transport->close();
-  } catch (TException& tx) {
-    LOG(INFO) << "ERROR: " << tx.what() << std::endl;
-    exit(0);
-  }
-}
-
 
 void GraphPS::run() {
   load_vertex_outdegree();
@@ -398,8 +410,8 @@ void GraphPS::run() {
   for (int32_t step = 0; step < _MaxIteration; step++) {
     start_time_comp();
     start_time_iter();
-    unsigned seed = _my_rank;
-    std::shuffle(_Allocated_Partition.begin(), _Allocated_Partition.end(), std::default_random_engine(seed));
+    std::srand(unsigned(std::time(0)));
+    std::random_shuffle(_Allocated_Partition.begin(), _Allocated_Partition.end());
     active_partition_num = 0;
     pre_process();
 

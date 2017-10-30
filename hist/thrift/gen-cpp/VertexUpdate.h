@@ -22,8 +22,7 @@ class VertexUpdateIf {
  public:
   virtual ~VertexUpdateIf() {}
   virtual int32_t ping(const int32_t id) = 0;
-  virtual int32_t update_vertex_sparse(const int32_t pid, const VidDtype vlen, const std::vector<VidDtype> & vid, const std::vector<VmsgDtype> & vmsg) = 0;
-  virtual int32_t update_vertex_dense(const int32_t pid, const VidDtype vlen, const VidDtype start_id, const std::vector<VmsgDtype> & vmsg) = 0;
+  virtual int32_t update_vertex(const VidDtype len, const std::vector<VidDtype> & vid, const std::vector<VmsgDtype> & vmsg) = 0;
 };
 
 class VertexUpdateIfFactory {
@@ -57,11 +56,7 @@ class VertexUpdateNull : virtual public VertexUpdateIf {
     int32_t _return = 0;
     return _return;
   }
-  int32_t update_vertex_sparse(const int32_t /* pid */, const VidDtype /* vlen */, const std::vector<VidDtype> & /* vid */, const std::vector<VmsgDtype> & /* vmsg */) {
-    int32_t _return = 0;
-    return _return;
-  }
-  int32_t update_vertex_dense(const int32_t /* pid */, const VidDtype /* vlen */, const VidDtype /* start_id */, const std::vector<VmsgDtype> & /* vmsg */) {
+  int32_t update_vertex(const VidDtype /* len */, const std::vector<VidDtype> & /* vid */, const std::vector<VmsgDtype> & /* vmsg */) {
     int32_t _return = 0;
     return _return;
   }
@@ -171,43 +166,37 @@ class VertexUpdate_ping_presult {
 
 };
 
-typedef struct _VertexUpdate_update_vertex_sparse_args__isset {
-  _VertexUpdate_update_vertex_sparse_args__isset() : pid(false), vlen(false), vid(false), vmsg(false) {}
-  bool pid :1;
-  bool vlen :1;
+typedef struct _VertexUpdate_update_vertex_args__isset {
+  _VertexUpdate_update_vertex_args__isset() : len(false), vid(false), vmsg(false) {}
+  bool len :1;
   bool vid :1;
   bool vmsg :1;
-} _VertexUpdate_update_vertex_sparse_args__isset;
+} _VertexUpdate_update_vertex_args__isset;
 
-class VertexUpdate_update_vertex_sparse_args {
+class VertexUpdate_update_vertex_args {
  public:
 
-  VertexUpdate_update_vertex_sparse_args(const VertexUpdate_update_vertex_sparse_args&);
-  VertexUpdate_update_vertex_sparse_args& operator=(const VertexUpdate_update_vertex_sparse_args&);
-  VertexUpdate_update_vertex_sparse_args() : pid(0), vlen(0) {
+  VertexUpdate_update_vertex_args(const VertexUpdate_update_vertex_args&);
+  VertexUpdate_update_vertex_args& operator=(const VertexUpdate_update_vertex_args&);
+  VertexUpdate_update_vertex_args() : len(0) {
   }
 
-  virtual ~VertexUpdate_update_vertex_sparse_args() throw();
-  int32_t pid;
-  VidDtype vlen;
+  virtual ~VertexUpdate_update_vertex_args() throw();
+  VidDtype len;
   std::vector<VidDtype>  vid;
   std::vector<VmsgDtype>  vmsg;
 
-  _VertexUpdate_update_vertex_sparse_args__isset __isset;
+  _VertexUpdate_update_vertex_args__isset __isset;
 
-  void __set_pid(const int32_t val);
-
-  void __set_vlen(const VidDtype val);
+  void __set_len(const VidDtype val);
 
   void __set_vid(const std::vector<VidDtype> & val);
 
   void __set_vmsg(const std::vector<VmsgDtype> & val);
 
-  bool operator == (const VertexUpdate_update_vertex_sparse_args & rhs) const
+  bool operator == (const VertexUpdate_update_vertex_args & rhs) const
   {
-    if (!(pid == rhs.pid))
-      return false;
-    if (!(vlen == rhs.vlen))
+    if (!(len == rhs.len))
       return false;
     if (!(vid == rhs.vid))
       return false;
@@ -215,11 +204,11 @@ class VertexUpdate_update_vertex_sparse_args {
       return false;
     return true;
   }
-  bool operator != (const VertexUpdate_update_vertex_sparse_args &rhs) const {
+  bool operator != (const VertexUpdate_update_vertex_args &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const VertexUpdate_update_vertex_sparse_args & ) const;
+  bool operator < (const VertexUpdate_update_vertex_args & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
@@ -227,13 +216,12 @@ class VertexUpdate_update_vertex_sparse_args {
 };
 
 
-class VertexUpdate_update_vertex_sparse_pargs {
+class VertexUpdate_update_vertex_pargs {
  public:
 
 
-  virtual ~VertexUpdate_update_vertex_sparse_pargs() throw();
-  const int32_t* pid;
-  const VidDtype* vlen;
+  virtual ~VertexUpdate_update_vertex_pargs() throw();
+  const VidDtype* len;
   const std::vector<VidDtype> * vid;
   const std::vector<VmsgDtype> * vmsg;
 
@@ -241,181 +229,56 @@ class VertexUpdate_update_vertex_sparse_pargs {
 
 };
 
-typedef struct _VertexUpdate_update_vertex_sparse_result__isset {
-  _VertexUpdate_update_vertex_sparse_result__isset() : success(false) {}
+typedef struct _VertexUpdate_update_vertex_result__isset {
+  _VertexUpdate_update_vertex_result__isset() : success(false) {}
   bool success :1;
-} _VertexUpdate_update_vertex_sparse_result__isset;
+} _VertexUpdate_update_vertex_result__isset;
 
-class VertexUpdate_update_vertex_sparse_result {
+class VertexUpdate_update_vertex_result {
  public:
 
-  VertexUpdate_update_vertex_sparse_result(const VertexUpdate_update_vertex_sparse_result&);
-  VertexUpdate_update_vertex_sparse_result& operator=(const VertexUpdate_update_vertex_sparse_result&);
-  VertexUpdate_update_vertex_sparse_result() : success(0) {
+  VertexUpdate_update_vertex_result(const VertexUpdate_update_vertex_result&);
+  VertexUpdate_update_vertex_result& operator=(const VertexUpdate_update_vertex_result&);
+  VertexUpdate_update_vertex_result() : success(0) {
   }
 
-  virtual ~VertexUpdate_update_vertex_sparse_result() throw();
+  virtual ~VertexUpdate_update_vertex_result() throw();
   int32_t success;
 
-  _VertexUpdate_update_vertex_sparse_result__isset __isset;
+  _VertexUpdate_update_vertex_result__isset __isset;
 
   void __set_success(const int32_t val);
 
-  bool operator == (const VertexUpdate_update_vertex_sparse_result & rhs) const
+  bool operator == (const VertexUpdate_update_vertex_result & rhs) const
   {
     if (!(success == rhs.success))
       return false;
     return true;
   }
-  bool operator != (const VertexUpdate_update_vertex_sparse_result &rhs) const {
+  bool operator != (const VertexUpdate_update_vertex_result &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const VertexUpdate_update_vertex_sparse_result & ) const;
+  bool operator < (const VertexUpdate_update_vertex_result & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-typedef struct _VertexUpdate_update_vertex_sparse_presult__isset {
-  _VertexUpdate_update_vertex_sparse_presult__isset() : success(false) {}
+typedef struct _VertexUpdate_update_vertex_presult__isset {
+  _VertexUpdate_update_vertex_presult__isset() : success(false) {}
   bool success :1;
-} _VertexUpdate_update_vertex_sparse_presult__isset;
+} _VertexUpdate_update_vertex_presult__isset;
 
-class VertexUpdate_update_vertex_sparse_presult {
+class VertexUpdate_update_vertex_presult {
  public:
 
 
-  virtual ~VertexUpdate_update_vertex_sparse_presult() throw();
+  virtual ~VertexUpdate_update_vertex_presult() throw();
   int32_t* success;
 
-  _VertexUpdate_update_vertex_sparse_presult__isset __isset;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-
-};
-
-typedef struct _VertexUpdate_update_vertex_dense_args__isset {
-  _VertexUpdate_update_vertex_dense_args__isset() : pid(false), vlen(false), start_id(false), vmsg(false) {}
-  bool pid :1;
-  bool vlen :1;
-  bool start_id :1;
-  bool vmsg :1;
-} _VertexUpdate_update_vertex_dense_args__isset;
-
-class VertexUpdate_update_vertex_dense_args {
- public:
-
-  VertexUpdate_update_vertex_dense_args(const VertexUpdate_update_vertex_dense_args&);
-  VertexUpdate_update_vertex_dense_args& operator=(const VertexUpdate_update_vertex_dense_args&);
-  VertexUpdate_update_vertex_dense_args() : pid(0), vlen(0), start_id(0) {
-  }
-
-  virtual ~VertexUpdate_update_vertex_dense_args() throw();
-  int32_t pid;
-  VidDtype vlen;
-  VidDtype start_id;
-  std::vector<VmsgDtype>  vmsg;
-
-  _VertexUpdate_update_vertex_dense_args__isset __isset;
-
-  void __set_pid(const int32_t val);
-
-  void __set_vlen(const VidDtype val);
-
-  void __set_start_id(const VidDtype val);
-
-  void __set_vmsg(const std::vector<VmsgDtype> & val);
-
-  bool operator == (const VertexUpdate_update_vertex_dense_args & rhs) const
-  {
-    if (!(pid == rhs.pid))
-      return false;
-    if (!(vlen == rhs.vlen))
-      return false;
-    if (!(start_id == rhs.start_id))
-      return false;
-    if (!(vmsg == rhs.vmsg))
-      return false;
-    return true;
-  }
-  bool operator != (const VertexUpdate_update_vertex_dense_args &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const VertexUpdate_update_vertex_dense_args & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-
-class VertexUpdate_update_vertex_dense_pargs {
- public:
-
-
-  virtual ~VertexUpdate_update_vertex_dense_pargs() throw();
-  const int32_t* pid;
-  const VidDtype* vlen;
-  const VidDtype* start_id;
-  const std::vector<VmsgDtype> * vmsg;
-
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-typedef struct _VertexUpdate_update_vertex_dense_result__isset {
-  _VertexUpdate_update_vertex_dense_result__isset() : success(false) {}
-  bool success :1;
-} _VertexUpdate_update_vertex_dense_result__isset;
-
-class VertexUpdate_update_vertex_dense_result {
- public:
-
-  VertexUpdate_update_vertex_dense_result(const VertexUpdate_update_vertex_dense_result&);
-  VertexUpdate_update_vertex_dense_result& operator=(const VertexUpdate_update_vertex_dense_result&);
-  VertexUpdate_update_vertex_dense_result() : success(0) {
-  }
-
-  virtual ~VertexUpdate_update_vertex_dense_result() throw();
-  int32_t success;
-
-  _VertexUpdate_update_vertex_dense_result__isset __isset;
-
-  void __set_success(const int32_t val);
-
-  bool operator == (const VertexUpdate_update_vertex_dense_result & rhs) const
-  {
-    if (!(success == rhs.success))
-      return false;
-    return true;
-  }
-  bool operator != (const VertexUpdate_update_vertex_dense_result &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const VertexUpdate_update_vertex_dense_result & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-typedef struct _VertexUpdate_update_vertex_dense_presult__isset {
-  _VertexUpdate_update_vertex_dense_presult__isset() : success(false) {}
-  bool success :1;
-} _VertexUpdate_update_vertex_dense_presult__isset;
-
-class VertexUpdate_update_vertex_dense_presult {
- public:
-
-
-  virtual ~VertexUpdate_update_vertex_dense_presult() throw();
-  int32_t* success;
-
-  _VertexUpdate_update_vertex_dense_presult__isset __isset;
+  _VertexUpdate_update_vertex_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -449,12 +312,9 @@ class VertexUpdateClient : virtual public VertexUpdateIf {
   int32_t ping(const int32_t id);
   void send_ping(const int32_t id);
   int32_t recv_ping();
-  int32_t update_vertex_sparse(const int32_t pid, const VidDtype vlen, const std::vector<VidDtype> & vid, const std::vector<VmsgDtype> & vmsg);
-  void send_update_vertex_sparse(const int32_t pid, const VidDtype vlen, const std::vector<VidDtype> & vid, const std::vector<VmsgDtype> & vmsg);
-  int32_t recv_update_vertex_sparse();
-  int32_t update_vertex_dense(const int32_t pid, const VidDtype vlen, const VidDtype start_id, const std::vector<VmsgDtype> & vmsg);
-  void send_update_vertex_dense(const int32_t pid, const VidDtype vlen, const VidDtype start_id, const std::vector<VmsgDtype> & vmsg);
-  int32_t recv_update_vertex_dense();
+  int32_t update_vertex(const VidDtype len, const std::vector<VidDtype> & vid, const std::vector<VmsgDtype> & vmsg);
+  void send_update_vertex(const VidDtype len, const std::vector<VidDtype> & vid, const std::vector<VmsgDtype> & vmsg);
+  int32_t recv_update_vertex();
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
@@ -471,14 +331,12 @@ class VertexUpdateProcessor : public ::apache::thrift::TDispatchProcessor {
   typedef std::map<std::string, ProcessFunction> ProcessMap;
   ProcessMap processMap_;
   void process_ping(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
-  void process_update_vertex_sparse(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
-  void process_update_vertex_dense(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_update_vertex(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   VertexUpdateProcessor(boost::shared_ptr<VertexUpdateIf> iface) :
     iface_(iface) {
     processMap_["ping"] = &VertexUpdateProcessor::process_ping;
-    processMap_["update_vertex_sparse"] = &VertexUpdateProcessor::process_update_vertex_sparse;
-    processMap_["update_vertex_dense"] = &VertexUpdateProcessor::process_update_vertex_dense;
+    processMap_["update_vertex"] = &VertexUpdateProcessor::process_update_vertex;
   }
 
   virtual ~VertexUpdateProcessor() {}
@@ -516,22 +374,13 @@ class VertexUpdateMultiface : virtual public VertexUpdateIf {
     return ifaces_[i]->ping(id);
   }
 
-  int32_t update_vertex_sparse(const int32_t pid, const VidDtype vlen, const std::vector<VidDtype> & vid, const std::vector<VmsgDtype> & vmsg) {
+  int32_t update_vertex(const VidDtype len, const std::vector<VidDtype> & vid, const std::vector<VmsgDtype> & vmsg) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->update_vertex_sparse(pid, vlen, vid, vmsg);
+      ifaces_[i]->update_vertex(len, vid, vmsg);
     }
-    return ifaces_[i]->update_vertex_sparse(pid, vlen, vid, vmsg);
-  }
-
-  int32_t update_vertex_dense(const int32_t pid, const VidDtype vlen, const VidDtype start_id, const std::vector<VmsgDtype> & vmsg) {
-    size_t sz = ifaces_.size();
-    size_t i = 0;
-    for (; i < (sz - 1); ++i) {
-      ifaces_[i]->update_vertex_dense(pid, vlen, start_id, vmsg);
-    }
-    return ifaces_[i]->update_vertex_dense(pid, vlen, start_id, vmsg);
+    return ifaces_[i]->update_vertex(len, vid, vmsg);
   }
 
 };
@@ -567,12 +416,9 @@ class VertexUpdateConcurrentClient : virtual public VertexUpdateIf {
   int32_t ping(const int32_t id);
   int32_t send_ping(const int32_t id);
   int32_t recv_ping(const int32_t seqid);
-  int32_t update_vertex_sparse(const int32_t pid, const VidDtype vlen, const std::vector<VidDtype> & vid, const std::vector<VmsgDtype> & vmsg);
-  int32_t send_update_vertex_sparse(const int32_t pid, const VidDtype vlen, const std::vector<VidDtype> & vid, const std::vector<VmsgDtype> & vmsg);
-  int32_t recv_update_vertex_sparse(const int32_t seqid);
-  int32_t update_vertex_dense(const int32_t pid, const VidDtype vlen, const VidDtype start_id, const std::vector<VmsgDtype> & vmsg);
-  int32_t send_update_vertex_dense(const int32_t pid, const VidDtype vlen, const VidDtype start_id, const std::vector<VmsgDtype> & vmsg);
-  int32_t recv_update_vertex_dense(const int32_t seqid);
+  int32_t update_vertex(const VidDtype len, const std::vector<VidDtype> & vid, const std::vector<VmsgDtype> & vmsg);
+  int32_t send_update_vertex(const VidDtype len, const std::vector<VidDtype> & vid, const std::vector<VmsgDtype> & vmsg);
+  int32_t recv_update_vertex(const int32_t seqid);
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;

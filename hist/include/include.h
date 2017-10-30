@@ -90,7 +90,6 @@ std::unordered_map<int, size_t> _Uncompressed_Buffer_Len;
 std::unordered_map<int, std::atomic<int>> _Uncompressed_Buffer_Lock;
 std::unordered_map<int, std::unordered_map<int, void*>> _Socket_Pool;
 
-double BF_THRE = 0.005;
 int _server_port = SERVER_PORT;
 int16_t _comp_level = COMPRESS_COMMU_LEVEL;
 int _my_rank;
@@ -101,6 +100,8 @@ int _hostname_len;
 char _hostname[HOST_LEN];
 char *_all_hostname;
 std::map<int, std::string> _map_hosts;
+
+double BF_THRE = 0.001;
 
 int DEFAULT_URBUF_SIZE_SP = 5120;
 int DEFAULT_CRBUF_SIZE_SP = 5120;

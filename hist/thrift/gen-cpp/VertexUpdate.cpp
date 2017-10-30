@@ -196,11 +196,11 @@ uint32_t VertexUpdate_ping_presult::read(::apache::thrift::protocol::TProtocol* 
 }
 
 
-VertexUpdate_update_vertex_sparse_args::~VertexUpdate_update_vertex_sparse_args() throw() {
+VertexUpdate_update_vertex_args::~VertexUpdate_update_vertex_args() throw() {
 }
 
 
-uint32_t VertexUpdate_update_vertex_sparse_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t VertexUpdate_update_vertex_args::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -223,21 +223,13 @@ uint32_t VertexUpdate_update_vertex_sparse_args::read(::apache::thrift::protocol
     {
       case 1:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          xfer += iprot->readI32(this->pid);
-          this->__isset.pid = true;
+          xfer += iprot->readI32(this->len);
+          this->__isset.len = true;
         } else {
           xfer += iprot->skip(ftype);
         }
         break;
       case 2:
-        if (ftype == ::apache::thrift::protocol::T_I32) {
-          xfer += iprot->readI32(this->vlen);
-          this->__isset.vlen = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 3:
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->vid.clear();
@@ -257,7 +249,7 @@ uint32_t VertexUpdate_update_vertex_sparse_args::read(::apache::thrift::protocol
           xfer += iprot->skip(ftype);
         }
         break;
-      case 4:
+      case 3:
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->vmsg.clear();
@@ -289,20 +281,16 @@ uint32_t VertexUpdate_update_vertex_sparse_args::read(::apache::thrift::protocol
   return xfer;
 }
 
-uint32_t VertexUpdate_update_vertex_sparse_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t VertexUpdate_update_vertex_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("VertexUpdate_update_vertex_sparse_args");
+  xfer += oprot->writeStructBegin("VertexUpdate_update_vertex_args");
 
-  xfer += oprot->writeFieldBegin("pid", ::apache::thrift::protocol::T_I32, 1);
-  xfer += oprot->writeI32(this->pid);
+  xfer += oprot->writeFieldBegin("len", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32(this->len);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("vlen", ::apache::thrift::protocol::T_I32, 2);
-  xfer += oprot->writeI32(this->vlen);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("vid", ::apache::thrift::protocol::T_LIST, 3);
+  xfer += oprot->writeFieldBegin("vid", ::apache::thrift::protocol::T_LIST, 2);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I32, static_cast<uint32_t>(this->vid.size()));
     std::vector<VidDtype> ::const_iterator _iter12;
@@ -314,7 +302,7 @@ uint32_t VertexUpdate_update_vertex_sparse_args::write(::apache::thrift::protoco
   }
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("vmsg", ::apache::thrift::protocol::T_LIST, 4);
+  xfer += oprot->writeFieldBegin("vmsg", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_DOUBLE, static_cast<uint32_t>(this->vmsg.size()));
     std::vector<VmsgDtype> ::const_iterator _iter13;
@@ -332,24 +320,20 @@ uint32_t VertexUpdate_update_vertex_sparse_args::write(::apache::thrift::protoco
 }
 
 
-VertexUpdate_update_vertex_sparse_pargs::~VertexUpdate_update_vertex_sparse_pargs() throw() {
+VertexUpdate_update_vertex_pargs::~VertexUpdate_update_vertex_pargs() throw() {
 }
 
 
-uint32_t VertexUpdate_update_vertex_sparse_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t VertexUpdate_update_vertex_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("VertexUpdate_update_vertex_sparse_pargs");
+  xfer += oprot->writeStructBegin("VertexUpdate_update_vertex_pargs");
 
-  xfer += oprot->writeFieldBegin("pid", ::apache::thrift::protocol::T_I32, 1);
-  xfer += oprot->writeI32((*(this->pid)));
+  xfer += oprot->writeFieldBegin("len", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32((*(this->len)));
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("vlen", ::apache::thrift::protocol::T_I32, 2);
-  xfer += oprot->writeI32((*(this->vlen)));
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("vid", ::apache::thrift::protocol::T_LIST, 3);
+  xfer += oprot->writeFieldBegin("vid", ::apache::thrift::protocol::T_LIST, 2);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I32, static_cast<uint32_t>((*(this->vid)).size()));
     std::vector<VidDtype> ::const_iterator _iter14;
@@ -361,7 +345,7 @@ uint32_t VertexUpdate_update_vertex_sparse_pargs::write(::apache::thrift::protoc
   }
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("vmsg", ::apache::thrift::protocol::T_LIST, 4);
+  xfer += oprot->writeFieldBegin("vmsg", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_DOUBLE, static_cast<uint32_t>((*(this->vmsg)).size()));
     std::vector<VmsgDtype> ::const_iterator _iter15;
@@ -379,11 +363,11 @@ uint32_t VertexUpdate_update_vertex_sparse_pargs::write(::apache::thrift::protoc
 }
 
 
-VertexUpdate_update_vertex_sparse_result::~VertexUpdate_update_vertex_sparse_result() throw() {
+VertexUpdate_update_vertex_result::~VertexUpdate_update_vertex_result() throw() {
 }
 
 
-uint32_t VertexUpdate_update_vertex_sparse_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t VertexUpdate_update_vertex_result::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -424,11 +408,11 @@ uint32_t VertexUpdate_update_vertex_sparse_result::read(::apache::thrift::protoc
   return xfer;
 }
 
-uint32_t VertexUpdate_update_vertex_sparse_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t VertexUpdate_update_vertex_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
 
   uint32_t xfer = 0;
 
-  xfer += oprot->writeStructBegin("VertexUpdate_update_vertex_sparse_result");
+  xfer += oprot->writeStructBegin("VertexUpdate_update_vertex_result");
 
   if (this->__isset.success) {
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_I32, 0);
@@ -441,274 +425,11 @@ uint32_t VertexUpdate_update_vertex_sparse_result::write(::apache::thrift::proto
 }
 
 
-VertexUpdate_update_vertex_sparse_presult::~VertexUpdate_update_vertex_sparse_presult() throw() {
+VertexUpdate_update_vertex_presult::~VertexUpdate_update_vertex_presult() throw() {
 }
 
 
-uint32_t VertexUpdate_update_vertex_sparse_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
-
-  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
-  uint32_t xfer = 0;
-  std::string fname;
-  ::apache::thrift::protocol::TType ftype;
-  int16_t fid;
-
-  xfer += iprot->readStructBegin(fname);
-
-  using ::apache::thrift::protocol::TProtocolException;
-
-
-  while (true)
-  {
-    xfer += iprot->readFieldBegin(fname, ftype, fid);
-    if (ftype == ::apache::thrift::protocol::T_STOP) {
-      break;
-    }
-    switch (fid)
-    {
-      case 0:
-        if (ftype == ::apache::thrift::protocol::T_I32) {
-          xfer += iprot->readI32((*(this->success)));
-          this->__isset.success = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      default:
-        xfer += iprot->skip(ftype);
-        break;
-    }
-    xfer += iprot->readFieldEnd();
-  }
-
-  xfer += iprot->readStructEnd();
-
-  return xfer;
-}
-
-
-VertexUpdate_update_vertex_dense_args::~VertexUpdate_update_vertex_dense_args() throw() {
-}
-
-
-uint32_t VertexUpdate_update_vertex_dense_args::read(::apache::thrift::protocol::TProtocol* iprot) {
-
-  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
-  uint32_t xfer = 0;
-  std::string fname;
-  ::apache::thrift::protocol::TType ftype;
-  int16_t fid;
-
-  xfer += iprot->readStructBegin(fname);
-
-  using ::apache::thrift::protocol::TProtocolException;
-
-
-  while (true)
-  {
-    xfer += iprot->readFieldBegin(fname, ftype, fid);
-    if (ftype == ::apache::thrift::protocol::T_STOP) {
-      break;
-    }
-    switch (fid)
-    {
-      case 1:
-        if (ftype == ::apache::thrift::protocol::T_I32) {
-          xfer += iprot->readI32(this->pid);
-          this->__isset.pid = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 2:
-        if (ftype == ::apache::thrift::protocol::T_I32) {
-          xfer += iprot->readI32(this->vlen);
-          this->__isset.vlen = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 3:
-        if (ftype == ::apache::thrift::protocol::T_I32) {
-          xfer += iprot->readI32(this->start_id);
-          this->__isset.start_id = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 4:
-        if (ftype == ::apache::thrift::protocol::T_LIST) {
-          {
-            this->vmsg.clear();
-            uint32_t _size16;
-            ::apache::thrift::protocol::TType _etype19;
-            xfer += iprot->readListBegin(_etype19, _size16);
-            this->vmsg.resize(_size16);
-            uint32_t _i20;
-            for (_i20 = 0; _i20 < _size16; ++_i20)
-            {
-              xfer += iprot->readDouble(this->vmsg[_i20]);
-            }
-            xfer += iprot->readListEnd();
-          }
-          this->__isset.vmsg = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      default:
-        xfer += iprot->skip(ftype);
-        break;
-    }
-    xfer += iprot->readFieldEnd();
-  }
-
-  xfer += iprot->readStructEnd();
-
-  return xfer;
-}
-
-uint32_t VertexUpdate_update_vertex_dense_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
-  uint32_t xfer = 0;
-  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("VertexUpdate_update_vertex_dense_args");
-
-  xfer += oprot->writeFieldBegin("pid", ::apache::thrift::protocol::T_I32, 1);
-  xfer += oprot->writeI32(this->pid);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("vlen", ::apache::thrift::protocol::T_I32, 2);
-  xfer += oprot->writeI32(this->vlen);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("start_id", ::apache::thrift::protocol::T_I32, 3);
-  xfer += oprot->writeI32(this->start_id);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("vmsg", ::apache::thrift::protocol::T_LIST, 4);
-  {
-    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_DOUBLE, static_cast<uint32_t>(this->vmsg.size()));
-    std::vector<VmsgDtype> ::const_iterator _iter21;
-    for (_iter21 = this->vmsg.begin(); _iter21 != this->vmsg.end(); ++_iter21)
-    {
-      xfer += oprot->writeDouble((*_iter21));
-    }
-    xfer += oprot->writeListEnd();
-  }
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldStop();
-  xfer += oprot->writeStructEnd();
-  return xfer;
-}
-
-
-VertexUpdate_update_vertex_dense_pargs::~VertexUpdate_update_vertex_dense_pargs() throw() {
-}
-
-
-uint32_t VertexUpdate_update_vertex_dense_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
-  uint32_t xfer = 0;
-  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("VertexUpdate_update_vertex_dense_pargs");
-
-  xfer += oprot->writeFieldBegin("pid", ::apache::thrift::protocol::T_I32, 1);
-  xfer += oprot->writeI32((*(this->pid)));
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("vlen", ::apache::thrift::protocol::T_I32, 2);
-  xfer += oprot->writeI32((*(this->vlen)));
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("start_id", ::apache::thrift::protocol::T_I32, 3);
-  xfer += oprot->writeI32((*(this->start_id)));
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("vmsg", ::apache::thrift::protocol::T_LIST, 4);
-  {
-    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_DOUBLE, static_cast<uint32_t>((*(this->vmsg)).size()));
-    std::vector<VmsgDtype> ::const_iterator _iter22;
-    for (_iter22 = (*(this->vmsg)).begin(); _iter22 != (*(this->vmsg)).end(); ++_iter22)
-    {
-      xfer += oprot->writeDouble((*_iter22));
-    }
-    xfer += oprot->writeListEnd();
-  }
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldStop();
-  xfer += oprot->writeStructEnd();
-  return xfer;
-}
-
-
-VertexUpdate_update_vertex_dense_result::~VertexUpdate_update_vertex_dense_result() throw() {
-}
-
-
-uint32_t VertexUpdate_update_vertex_dense_result::read(::apache::thrift::protocol::TProtocol* iprot) {
-
-  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
-  uint32_t xfer = 0;
-  std::string fname;
-  ::apache::thrift::protocol::TType ftype;
-  int16_t fid;
-
-  xfer += iprot->readStructBegin(fname);
-
-  using ::apache::thrift::protocol::TProtocolException;
-
-
-  while (true)
-  {
-    xfer += iprot->readFieldBegin(fname, ftype, fid);
-    if (ftype == ::apache::thrift::protocol::T_STOP) {
-      break;
-    }
-    switch (fid)
-    {
-      case 0:
-        if (ftype == ::apache::thrift::protocol::T_I32) {
-          xfer += iprot->readI32(this->success);
-          this->__isset.success = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      default:
-        xfer += iprot->skip(ftype);
-        break;
-    }
-    xfer += iprot->readFieldEnd();
-  }
-
-  xfer += iprot->readStructEnd();
-
-  return xfer;
-}
-
-uint32_t VertexUpdate_update_vertex_dense_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
-
-  uint32_t xfer = 0;
-
-  xfer += oprot->writeStructBegin("VertexUpdate_update_vertex_dense_result");
-
-  if (this->__isset.success) {
-    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_I32, 0);
-    xfer += oprot->writeI32(this->success);
-    xfer += oprot->writeFieldEnd();
-  }
-  xfer += oprot->writeFieldStop();
-  xfer += oprot->writeStructEnd();
-  return xfer;
-}
-
-
-VertexUpdate_update_vertex_dense_presult::~VertexUpdate_update_vertex_dense_presult() throw() {
-}
-
-
-uint32_t VertexUpdate_update_vertex_dense_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t VertexUpdate_update_vertex_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -807,20 +528,19 @@ int32_t VertexUpdateClient::recv_ping()
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "ping failed: unknown result");
 }
 
-int32_t VertexUpdateClient::update_vertex_sparse(const int32_t pid, const VidDtype vlen, const std::vector<VidDtype> & vid, const std::vector<VmsgDtype> & vmsg)
+int32_t VertexUpdateClient::update_vertex(const VidDtype len, const std::vector<VidDtype> & vid, const std::vector<VmsgDtype> & vmsg)
 {
-  send_update_vertex_sparse(pid, vlen, vid, vmsg);
-  return recv_update_vertex_sparse();
+  send_update_vertex(len, vid, vmsg);
+  return recv_update_vertex();
 }
 
-void VertexUpdateClient::send_update_vertex_sparse(const int32_t pid, const VidDtype vlen, const std::vector<VidDtype> & vid, const std::vector<VmsgDtype> & vmsg)
+void VertexUpdateClient::send_update_vertex(const VidDtype len, const std::vector<VidDtype> & vid, const std::vector<VmsgDtype> & vmsg)
 {
   int32_t cseqid = 0;
-  oprot_->writeMessageBegin("update_vertex_sparse", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("update_vertex", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  VertexUpdate_update_vertex_sparse_pargs args;
-  args.pid = &pid;
-  args.vlen = &vlen;
+  VertexUpdate_update_vertex_pargs args;
+  args.len = &len;
   args.vid = &vid;
   args.vmsg = &vmsg;
   args.write(oprot_);
@@ -830,7 +550,7 @@ void VertexUpdateClient::send_update_vertex_sparse(const int32_t pid, const VidD
   oprot_->getTransport()->flush();
 }
 
-int32_t VertexUpdateClient::recv_update_vertex_sparse()
+int32_t VertexUpdateClient::recv_update_vertex()
 {
 
   int32_t rseqid = 0;
@@ -850,13 +570,13 @@ int32_t VertexUpdateClient::recv_update_vertex_sparse()
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  if (fname.compare("update_vertex_sparse") != 0) {
+  if (fname.compare("update_vertex") != 0) {
     iprot_->skip(::apache::thrift::protocol::T_STRUCT);
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
   int32_t _return;
-  VertexUpdate_update_vertex_sparse_presult result;
+  VertexUpdate_update_vertex_presult result;
   result.success = &_return;
   result.read(iprot_);
   iprot_->readMessageEnd();
@@ -865,68 +585,7 @@ int32_t VertexUpdateClient::recv_update_vertex_sparse()
   if (result.__isset.success) {
     return _return;
   }
-  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "update_vertex_sparse failed: unknown result");
-}
-
-int32_t VertexUpdateClient::update_vertex_dense(const int32_t pid, const VidDtype vlen, const VidDtype start_id, const std::vector<VmsgDtype> & vmsg)
-{
-  send_update_vertex_dense(pid, vlen, start_id, vmsg);
-  return recv_update_vertex_dense();
-}
-
-void VertexUpdateClient::send_update_vertex_dense(const int32_t pid, const VidDtype vlen, const VidDtype start_id, const std::vector<VmsgDtype> & vmsg)
-{
-  int32_t cseqid = 0;
-  oprot_->writeMessageBegin("update_vertex_dense", ::apache::thrift::protocol::T_CALL, cseqid);
-
-  VertexUpdate_update_vertex_dense_pargs args;
-  args.pid = &pid;
-  args.vlen = &vlen;
-  args.start_id = &start_id;
-  args.vmsg = &vmsg;
-  args.write(oprot_);
-
-  oprot_->writeMessageEnd();
-  oprot_->getTransport()->writeEnd();
-  oprot_->getTransport()->flush();
-}
-
-int32_t VertexUpdateClient::recv_update_vertex_dense()
-{
-
-  int32_t rseqid = 0;
-  std::string fname;
-  ::apache::thrift::protocol::TMessageType mtype;
-
-  iprot_->readMessageBegin(fname, mtype, rseqid);
-  if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
-    ::apache::thrift::TApplicationException x;
-    x.read(iprot_);
-    iprot_->readMessageEnd();
-    iprot_->getTransport()->readEnd();
-    throw x;
-  }
-  if (mtype != ::apache::thrift::protocol::T_REPLY) {
-    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
-    iprot_->readMessageEnd();
-    iprot_->getTransport()->readEnd();
-  }
-  if (fname.compare("update_vertex_dense") != 0) {
-    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
-    iprot_->readMessageEnd();
-    iprot_->getTransport()->readEnd();
-  }
-  int32_t _return;
-  VertexUpdate_update_vertex_dense_presult result;
-  result.success = &_return;
-  result.read(iprot_);
-  iprot_->readMessageEnd();
-  iprot_->getTransport()->readEnd();
-
-  if (result.__isset.success) {
-    return _return;
-  }
-  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "update_vertex_dense failed: unknown result");
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "update_vertex failed: unknown result");
 }
 
 bool VertexUpdateProcessor::dispatchCall(::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, const std::string& fname, int32_t seqid, void* callContext) {
@@ -1002,38 +661,38 @@ void VertexUpdateProcessor::process_ping(int32_t seqid, ::apache::thrift::protoc
   }
 }
 
-void VertexUpdateProcessor::process_update_vertex_sparse(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+void VertexUpdateProcessor::process_update_vertex(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
   void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
-    ctx = this->eventHandler_->getContext("VertexUpdate.update_vertex_sparse", callContext);
+    ctx = this->eventHandler_->getContext("VertexUpdate.update_vertex", callContext);
   }
-  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "VertexUpdate.update_vertex_sparse");
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "VertexUpdate.update_vertex");
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preRead(ctx, "VertexUpdate.update_vertex_sparse");
+    this->eventHandler_->preRead(ctx, "VertexUpdate.update_vertex");
   }
 
-  VertexUpdate_update_vertex_sparse_args args;
+  VertexUpdate_update_vertex_args args;
   args.read(iprot);
   iprot->readMessageEnd();
   uint32_t bytes = iprot->getTransport()->readEnd();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postRead(ctx, "VertexUpdate.update_vertex_sparse", bytes);
+    this->eventHandler_->postRead(ctx, "VertexUpdate.update_vertex", bytes);
   }
 
-  VertexUpdate_update_vertex_sparse_result result;
+  VertexUpdate_update_vertex_result result;
   try {
-    result.success = iface_->update_vertex_sparse(args.pid, args.vlen, args.vid, args.vmsg);
+    result.success = iface_->update_vertex(args.len, args.vid, args.vmsg);
     result.__isset.success = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {
-      this->eventHandler_->handlerError(ctx, "VertexUpdate.update_vertex_sparse");
+      this->eventHandler_->handlerError(ctx, "VertexUpdate.update_vertex");
     }
 
     ::apache::thrift::TApplicationException x(e.what());
-    oprot->writeMessageBegin("update_vertex_sparse", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    oprot->writeMessageBegin("update_vertex", ::apache::thrift::protocol::T_EXCEPTION, seqid);
     x.write(oprot);
     oprot->writeMessageEnd();
     oprot->getTransport()->writeEnd();
@@ -1042,71 +701,17 @@ void VertexUpdateProcessor::process_update_vertex_sparse(int32_t seqid, ::apache
   }
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preWrite(ctx, "VertexUpdate.update_vertex_sparse");
+    this->eventHandler_->preWrite(ctx, "VertexUpdate.update_vertex");
   }
 
-  oprot->writeMessageBegin("update_vertex_sparse", ::apache::thrift::protocol::T_REPLY, seqid);
+  oprot->writeMessageBegin("update_vertex", ::apache::thrift::protocol::T_REPLY, seqid);
   result.write(oprot);
   oprot->writeMessageEnd();
   bytes = oprot->getTransport()->writeEnd();
   oprot->getTransport()->flush();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postWrite(ctx, "VertexUpdate.update_vertex_sparse", bytes);
-  }
-}
-
-void VertexUpdateProcessor::process_update_vertex_dense(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
-{
-  void* ctx = NULL;
-  if (this->eventHandler_.get() != NULL) {
-    ctx = this->eventHandler_->getContext("VertexUpdate.update_vertex_dense", callContext);
-  }
-  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "VertexUpdate.update_vertex_dense");
-
-  if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preRead(ctx, "VertexUpdate.update_vertex_dense");
-  }
-
-  VertexUpdate_update_vertex_dense_args args;
-  args.read(iprot);
-  iprot->readMessageEnd();
-  uint32_t bytes = iprot->getTransport()->readEnd();
-
-  if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postRead(ctx, "VertexUpdate.update_vertex_dense", bytes);
-  }
-
-  VertexUpdate_update_vertex_dense_result result;
-  try {
-    result.success = iface_->update_vertex_dense(args.pid, args.vlen, args.start_id, args.vmsg);
-    result.__isset.success = true;
-  } catch (const std::exception& e) {
-    if (this->eventHandler_.get() != NULL) {
-      this->eventHandler_->handlerError(ctx, "VertexUpdate.update_vertex_dense");
-    }
-
-    ::apache::thrift::TApplicationException x(e.what());
-    oprot->writeMessageBegin("update_vertex_dense", ::apache::thrift::protocol::T_EXCEPTION, seqid);
-    x.write(oprot);
-    oprot->writeMessageEnd();
-    oprot->getTransport()->writeEnd();
-    oprot->getTransport()->flush();
-    return;
-  }
-
-  if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preWrite(ctx, "VertexUpdate.update_vertex_dense");
-  }
-
-  oprot->writeMessageBegin("update_vertex_dense", ::apache::thrift::protocol::T_REPLY, seqid);
-  result.write(oprot);
-  oprot->writeMessageEnd();
-  bytes = oprot->getTransport()->writeEnd();
-  oprot->getTransport()->flush();
-
-  if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postWrite(ctx, "VertexUpdate.update_vertex_dense", bytes);
+    this->eventHandler_->postWrite(ctx, "VertexUpdate.update_vertex", bytes);
   }
 }
 
@@ -1201,21 +806,20 @@ int32_t VertexUpdateConcurrentClient::recv_ping(const int32_t seqid)
   } // end while(true)
 }
 
-int32_t VertexUpdateConcurrentClient::update_vertex_sparse(const int32_t pid, const VidDtype vlen, const std::vector<VidDtype> & vid, const std::vector<VmsgDtype> & vmsg)
+int32_t VertexUpdateConcurrentClient::update_vertex(const VidDtype len, const std::vector<VidDtype> & vid, const std::vector<VmsgDtype> & vmsg)
 {
-  int32_t seqid = send_update_vertex_sparse(pid, vlen, vid, vmsg);
-  return recv_update_vertex_sparse(seqid);
+  int32_t seqid = send_update_vertex(len, vid, vmsg);
+  return recv_update_vertex(seqid);
 }
 
-int32_t VertexUpdateConcurrentClient::send_update_vertex_sparse(const int32_t pid, const VidDtype vlen, const std::vector<VidDtype> & vid, const std::vector<VmsgDtype> & vmsg)
+int32_t VertexUpdateConcurrentClient::send_update_vertex(const VidDtype len, const std::vector<VidDtype> & vid, const std::vector<VmsgDtype> & vmsg)
 {
   int32_t cseqid = this->sync_.generateSeqId();
   ::apache::thrift::async::TConcurrentSendSentry sentry(&this->sync_);
-  oprot_->writeMessageBegin("update_vertex_sparse", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("update_vertex", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  VertexUpdate_update_vertex_sparse_pargs args;
-  args.pid = &pid;
-  args.vlen = &vlen;
+  VertexUpdate_update_vertex_pargs args;
+  args.len = &len;
   args.vid = &vid;
   args.vmsg = &vmsg;
   args.write(oprot_);
@@ -1228,7 +832,7 @@ int32_t VertexUpdateConcurrentClient::send_update_vertex_sparse(const int32_t pi
   return cseqid;
 }
 
-int32_t VertexUpdateConcurrentClient::recv_update_vertex_sparse(const int32_t seqid)
+int32_t VertexUpdateConcurrentClient::recv_update_vertex(const int32_t seqid)
 {
 
   int32_t rseqid = 0;
@@ -1257,7 +861,7 @@ int32_t VertexUpdateConcurrentClient::recv_update_vertex_sparse(const int32_t se
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
       }
-      if (fname.compare("update_vertex_sparse") != 0) {
+      if (fname.compare("update_vertex") != 0) {
         iprot_->skip(::apache::thrift::protocol::T_STRUCT);
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
@@ -1267,7 +871,7 @@ int32_t VertexUpdateConcurrentClient::recv_update_vertex_sparse(const int32_t se
         throw TProtocolException(TProtocolException::INVALID_DATA);
       }
       int32_t _return;
-      VertexUpdate_update_vertex_sparse_presult result;
+      VertexUpdate_update_vertex_presult result;
       result.success = &_return;
       result.read(iprot_);
       iprot_->readMessageEnd();
@@ -1278,94 +882,7 @@ int32_t VertexUpdateConcurrentClient::recv_update_vertex_sparse(const int32_t se
         return _return;
       }
       // in a bad state, don't commit
-      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "update_vertex_sparse failed: unknown result");
-    }
-    // seqid != rseqid
-    this->sync_.updatePending(fname, mtype, rseqid);
-
-    // this will temporarily unlock the readMutex, and let other clients get work done
-    this->sync_.waitForWork(seqid);
-  } // end while(true)
-}
-
-int32_t VertexUpdateConcurrentClient::update_vertex_dense(const int32_t pid, const VidDtype vlen, const VidDtype start_id, const std::vector<VmsgDtype> & vmsg)
-{
-  int32_t seqid = send_update_vertex_dense(pid, vlen, start_id, vmsg);
-  return recv_update_vertex_dense(seqid);
-}
-
-int32_t VertexUpdateConcurrentClient::send_update_vertex_dense(const int32_t pid, const VidDtype vlen, const VidDtype start_id, const std::vector<VmsgDtype> & vmsg)
-{
-  int32_t cseqid = this->sync_.generateSeqId();
-  ::apache::thrift::async::TConcurrentSendSentry sentry(&this->sync_);
-  oprot_->writeMessageBegin("update_vertex_dense", ::apache::thrift::protocol::T_CALL, cseqid);
-
-  VertexUpdate_update_vertex_dense_pargs args;
-  args.pid = &pid;
-  args.vlen = &vlen;
-  args.start_id = &start_id;
-  args.vmsg = &vmsg;
-  args.write(oprot_);
-
-  oprot_->writeMessageEnd();
-  oprot_->getTransport()->writeEnd();
-  oprot_->getTransport()->flush();
-
-  sentry.commit();
-  return cseqid;
-}
-
-int32_t VertexUpdateConcurrentClient::recv_update_vertex_dense(const int32_t seqid)
-{
-
-  int32_t rseqid = 0;
-  std::string fname;
-  ::apache::thrift::protocol::TMessageType mtype;
-
-  // the read mutex gets dropped and reacquired as part of waitForWork()
-  // The destructor of this sentry wakes up other clients
-  ::apache::thrift::async::TConcurrentRecvSentry sentry(&this->sync_, seqid);
-
-  while(true) {
-    if(!this->sync_.getPending(fname, mtype, rseqid)) {
-      iprot_->readMessageBegin(fname, mtype, rseqid);
-    }
-    if(seqid == rseqid) {
-      if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
-        ::apache::thrift::TApplicationException x;
-        x.read(iprot_);
-        iprot_->readMessageEnd();
-        iprot_->getTransport()->readEnd();
-        sentry.commit();
-        throw x;
-      }
-      if (mtype != ::apache::thrift::protocol::T_REPLY) {
-        iprot_->skip(::apache::thrift::protocol::T_STRUCT);
-        iprot_->readMessageEnd();
-        iprot_->getTransport()->readEnd();
-      }
-      if (fname.compare("update_vertex_dense") != 0) {
-        iprot_->skip(::apache::thrift::protocol::T_STRUCT);
-        iprot_->readMessageEnd();
-        iprot_->getTransport()->readEnd();
-
-        // in a bad state, don't commit
-        using ::apache::thrift::protocol::TProtocolException;
-        throw TProtocolException(TProtocolException::INVALID_DATA);
-      }
-      int32_t _return;
-      VertexUpdate_update_vertex_dense_presult result;
-      result.success = &_return;
-      result.read(iprot_);
-      iprot_->readMessageEnd();
-      iprot_->getTransport()->readEnd();
-
-      if (result.__isset.success) {
-        sentry.commit();
-        return _return;
-      }
-      // in a bad state, don't commit
-      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "update_vertex_dense failed: unknown result");
+      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "update_vertex failed: unknown result");
     }
     // seqid != rseqid
     this->sync_.updatePending(fname, mtype, rseqid);

@@ -4,17 +4,6 @@
 #include "include.h"
 #include "dataload.h"
 
-int32_t get_col_id(int32_t vertex_id) {
-  int32_t cid = 0;
-  for (int i=0; i<9; i++) {
-    if (vertex_id >= _col_split[i] && vertex_id < _col_split[i+1]) {
-      cid = i;
-      break;
-    }
-  }
-  return cid;
-}
-
 void barrier_workers() {
   MPI_Barrier(MPI_COMM_WORLD);
 }
