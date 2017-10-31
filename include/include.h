@@ -62,6 +62,9 @@ std::chrono::steady_clock::time_point APP_TIME_END;
 std::chrono::steady_clock::time_point ITER_TIME_START;
 std::chrono::steady_clock::time_point ITER_TIME_END;
 
+std::string shell_network_traffic 
+  = "ifconfig | awk -F: '/TX bytes/{sum += $2+0};END {print sum}' 2>&1";
+long network_traffic;
 int64_t INIT_TIME;
 int64_t COMP_TIME;
 int64_t APP_TIME;

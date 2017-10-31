@@ -19,6 +19,22 @@ void barrier_workers() {
   MPI_Barrier(MPI_COMM_WORLD);
 }
 
+long get_network_traffic() {
+  std::string data;
+  FILE * stream;
+  const int max_buffer = 256;
+  char buffer[max_buffer];
+  // cmd.append(" 2>&1");
+
+  stream = popen(shell_network_traffic.c_str(), "r");
+  if (stream) {
+    while (!feof(stream))
+    if (fgets(buffer, max_buffer, stream) != NULL) data.append(buffer);
+    pclose(stream);
+  }
+  return std::stol(data, NULL);
+}
+
 void finalize_workers() {
   LOG(INFO) << "Finalizing the application";
   delete [] (_all_hostname);

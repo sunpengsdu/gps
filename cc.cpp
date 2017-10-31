@@ -18,7 +18,12 @@ class VertexUpdateHandler : virtual public VertexUpdateIf {
     while(CAS(&(_GraphPS->_PartitionLock[pid]), false, true) == false) {sleep_ms(1);}
     for (int i=0; i<vlen; i++) {
       id = vid[i];
-      _GraphPS->_VertexData[id-_GraphPS->_VertexStartID].msg += vmsg[i];
+      if (_GraphPS->_VertexData[id-_GraphPS->_VertexStartID].msg.maxID < vmsg[i].maxID) {
+        _GraphPS->_VertexData[id-_GraphPS->_VertexStartID].msg.maxID = vmsg[i].maxID;
+      }
+      if (_GraphPS->_VertexData[id-_GraphPS->_VertexStartID].msg.minID > vmsg[i].minID) {
+        _GraphPS->_VertexData[id-_GraphPS->_VertexStartID].msg.minID = vmsg[i].minID;
+      }
     }
     CAS(&(_GraphPS->_PartitionLock[pid]), true, false);
     return 0;
@@ -30,7 +35,12 @@ class VertexUpdateHandler : virtual public VertexUpdateIf {
     while(CAS(&(_GraphPS->_PartitionLock[pid]), false, true) == false) {sleep_ms(1);}
     for (int i=0; i<vlen; i++) {
       id = start_id + i;
-      _GraphPS->_VertexData[id-_GraphPS->_VertexStartID].msg += vmsg[i];
+      if (_GraphPS->_VertexData[id-_GraphPS->_VertexStartID].msg.maxID < vmsg[i].maxID) {
+        _GraphPS->_VertexData[id-_GraphPS->_VertexStartID].msg.maxID = vmsg[i].maxID;
+      }
+      if (_GraphPS->_VertexData[id-_GraphPS->_VertexStartID].msg.minID > vmsg[i].minID) {
+        _GraphPS->_VertexData[id-_GraphPS->_VertexStartID].msg.minID = vmsg[i].minID;
+      }
     }
     CAS(&(_GraphPS->_PartitionLock[pid]), true, false);
     return 0;
@@ -39,8 +49,11 @@ class VertexUpdateHandler : virtual public VertexUpdateIf {
 
 void GraphPS::init_vertex_data() {
   for (int i=0; i<_VertexEndID-_VertexStartID; i++) {
-    _VertexData[i].value = 1.0/_VertexTotalNum;
-    _VertexData[i].msg = 0;
+    _VertexData[i].value.maxID = i + _VertexStartID;
+    _VertexData[i].value.minID = i + _VertexStartID;
+    _VertexData[i].msg.maxID = i + _VertexStartID;
+    _VertexData[i].msg.minID = i + _VertexStartID;
+    _VertexData[i].state = true;
   }
 }
 
@@ -58,13 +71,15 @@ void GraphPS::comp(int32_t P_ID) {
 
   std::vector<VidDtype> vid_vec[2];
   std::vector<VmsgDtype> vmsg_vec[2];
-  VmsgDtype vmsg = 0;
+  VmsgDtype vmsg; 
   int vector_id = 0;
   VidDtype offset=v_end_id;
+  bool updated = false;
 
   for (int i=0; i < v_num; i++) {
+    updated = false;
     p++; vid = *p; p++; len = *p;
-    vmsg = 0; 
+    vmsg.maxID = 0; vmsg.minID = _VertexTotalNum;
     if (c_start_id == c_end_id){vector_id = 0;}
     else {
       vector_id = get_col_id(vid) - c_start_id;
@@ -73,24 +88,37 @@ void GraphPS::comp(int32_t P_ID) {
       }
     }
     if (len==0) {continue;} 
-      vid_vec[vector_id].push_back(vid);
     for (int k=0; k < len; k++) {
       p++;
-      vmsg += _VertexData[*p-_VertexStartID].value/_VertexData[*p-_VertexStartID].outdegree;
+      if (_VertexData[*p-_VertexStartID].state == true) {
+        if (vmsg.maxID < _VertexData[*p-_VertexStartID].value.maxID) {
+          vmsg.maxID = _VertexData[*p-_VertexStartID].value.maxID;
+          updated = true;
+        }
+        if (vmsg.minID > _VertexData[*p-_VertexStartID].value.minID) {
+          vmsg.minID = _VertexData[*p-_VertexStartID].value.minID;
+          updated = true;
+        }
+      }
     }
-    vmsg_vec[vector_id].push_back(vmsg);
+    if (updated == true) {
+      vid_vec[vector_id].push_back(vid);
+      vmsg_vec[vector_id].push_back(vmsg);
+    }
   }  
 
   clean_edge(P_ID, reinterpret_cast<char*>(PartitionData));
 
+  vmsg.maxID = 0; vmsg.minID = _VertexTotalNum;
   if (vid_vec[0].size() > 0) {
     if (vid_vec[0].size()*1.0/(offset-v_start_id) < SPARSE_COMMU) {
        send_msg_sparse(P_ID, std::ref(vid_vec[0]), std::ref(vmsg_vec[0]), v_start_id);
     } else {
       std::vector<VmsgDtype> vmsg_dense_v;
-      vmsg_dense_v.assign(offset - v_start_id, 0);
+      vmsg_dense_v.assign(offset - v_start_id, vmsg);
       for (int k=0; k<int(vid_vec[0].size()); k++) {
-        vmsg_dense_v[vid_vec[0][k]-v_start_id] = vmsg_vec[0][k];
+        vmsg_dense_v[vid_vec[0][k]-v_start_id].maxID = vmsg_vec[0][k].maxID;
+        vmsg_dense_v[vid_vec[0][k]-v_start_id].minID = vmsg_vec[0][k].minID;
       }
       send_msg_dense(P_ID, std::ref(vmsg_dense_v), v_start_id);
     }
@@ -101,9 +129,10 @@ void GraphPS::comp(int32_t P_ID) {
       send_msg_sparse(P_ID, std::ref(vid_vec[1]), std::ref(vmsg_vec[1]), offset);
     } else {
       std::vector<VmsgDtype> vmsg_dense_v;
-      vmsg_dense_v.assign(v_end_id - offset, 0);
+      vmsg_dense_v.assign(v_end_id - offset, vmsg);
       for (int k=0; k<int(vid_vec[1].size()); k++) {
-        vmsg_dense_v[vid_vec[1][k]-offset] = vmsg_vec[1][k];
+        vmsg_dense_v[vid_vec[1][k]-offset].maxID = vmsg_vec[1][k].maxID;
+        vmsg_dense_v[vid_vec[1][k]-offset].minID = vmsg_vec[1][k].minID;
       }
       send_msg_dense(P_ID, std::ref(vmsg_dense_v), offset);
     }
@@ -117,14 +146,18 @@ void GraphPS::pre_process() {
 void GraphPS::post_process() {
   #pragma omp parallel for num_threads(CMPNUM) schedule(static)
   for (int i=0; i<_VertexEndID-_VertexStartID; i++) {
-    VvalueDtype value  = 0.85*_VertexData[i].msg + 1.0/_VertexTotalNum;
-    if (_VertexData[i].value == value) {
-      _VertexData[i].state = false;
-    } else {
-      _VertexData[i].value = value;
+    if (_VertexData[i].value.maxID < _VertexData[i].msg.maxID) {
+      _VertexData[i].value.maxID = _VertexData[i].msg.maxID;
       _VertexData[i].state = true;
+    } else if ( _VertexData[i].value.minID <= _VertexData[i].msg.minID) {
+      _VertexData[i].state = false;
     }
-    _VertexData[i].msg = 0;
+    if (_VertexData[i].value.minID > _VertexData[i].msg.minID) {
+      _VertexData[i].value.minID = _VertexData[i].msg.minID;
+      _VertexData[i].state = true;
+    } else if (_VertexData[i].value.maxID >= _VertexData[i].msg.maxID) {
+      _VertexData[i].state = false;
+    }
   }
 }
 
@@ -170,17 +203,17 @@ int main(int argc, char **argv) {
   // memcpy(_col_split, a, sizeof(int)*10);
   // _GraphPS->init("/data/3/ps-9/twitter/", 41652230, 60,  10);
 
-  // int a[10] = {0, 20815361, 37170387, 49007341, 63087641, 77794058, 90254794, 106507476, 122011708, 133633040};
-  // memcpy(_col_split, a, sizeof(int)*10);
-  // _GraphPS->init("/data/3/ps-9/webuk/", 133633040, 100, 200);
+  int a[10] = {0, 20815361, 37170387, 49007341, 63087641, 77794058, 90254794, 106507476, 122011708, 133633040};
+  memcpy(_col_split, a, sizeof(int)*10);
+  _GraphPS->init("/data/3/ps-9/webuk/", 133633040, 100, 100);
 
   // int a[10] = {0, 88151819, 183178636, 276616717, 371916221, 453978069, 551574640, 630438645, 715178718, 787801471};
   // memcpy(_col_split, a, sizeof(int)*10);
   // _GraphPS->init("/data/3/ps-9/uk/", 787801471, 500,  100);
 
-  int a[10] = {0, 115848295, 234689314, 351159484, 470107331, 590866731, 709630706, 819058151, 942110302, 1070557254};
-  memcpy(_col_split, a, sizeof(int)*10);
-  _GraphPS->init("/data/3/ps-9/eu/", 1070557254, 600, 100); _GraphPS->run();
+  // int a[10] = {0, 115848295, 234689314, 351159484, 470107331, 590866731, 709630706, 819058151, 942110302, 1070557254};
+  // memcpy(_col_split, a, sizeof(int)*10);
+  // _GraphPS->init("/data/3/ps-9/eu/", 1070557254, 600, 100); 
 
   sleep_ms(10);
 

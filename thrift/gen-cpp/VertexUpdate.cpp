@@ -241,14 +241,14 @@ uint32_t VertexUpdate_update_vertex_sparse_args::read(::apache::thrift::protocol
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->vid.clear();
-            uint32_t _size2;
-            ::apache::thrift::protocol::TType _etype5;
-            xfer += iprot->readListBegin(_etype5, _size2);
-            this->vid.resize(_size2);
-            uint32_t _i6;
-            for (_i6 = 0; _i6 < _size2; ++_i6)
+            uint32_t _size4;
+            ::apache::thrift::protocol::TType _etype7;
+            xfer += iprot->readListBegin(_etype7, _size4);
+            this->vid.resize(_size4);
+            uint32_t _i8;
+            for (_i8 = 0; _i8 < _size4; ++_i8)
             {
-              xfer += iprot->readI32(this->vid[_i6]);
+              xfer += iprot->readI32(this->vid[_i8]);
             }
             xfer += iprot->readListEnd();
           }
@@ -261,14 +261,14 @@ uint32_t VertexUpdate_update_vertex_sparse_args::read(::apache::thrift::protocol
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->vmsg.clear();
-            uint32_t _size7;
-            ::apache::thrift::protocol::TType _etype10;
-            xfer += iprot->readListBegin(_etype10, _size7);
-            this->vmsg.resize(_size7);
-            uint32_t _i11;
-            for (_i11 = 0; _i11 < _size7; ++_i11)
+            uint32_t _size9;
+            ::apache::thrift::protocol::TType _etype12;
+            xfer += iprot->readListBegin(_etype12, _size9);
+            this->vmsg.resize(_size9);
+            uint32_t _i13;
+            for (_i13 = 0; _i13 < _size9; ++_i13)
             {
-              xfer += iprot->readDouble(this->vmsg[_i11]);
+              xfer += iprot->readDouble(this->vmsg[_i13]);
             }
             xfer += iprot->readListEnd();
           }
@@ -305,10 +305,10 @@ uint32_t VertexUpdate_update_vertex_sparse_args::write(::apache::thrift::protoco
   xfer += oprot->writeFieldBegin("vid", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I32, static_cast<uint32_t>(this->vid.size()));
-    std::vector<VidDtype> ::const_iterator _iter12;
-    for (_iter12 = this->vid.begin(); _iter12 != this->vid.end(); ++_iter12)
+    std::vector<VidDtype> ::const_iterator _iter14;
+    for (_iter14 = this->vid.begin(); _iter14 != this->vid.end(); ++_iter14)
     {
-      xfer += oprot->writeI32((*_iter12));
+      xfer += oprot->writeI32((*_iter14));
     }
     xfer += oprot->writeListEnd();
   }
@@ -317,10 +317,10 @@ uint32_t VertexUpdate_update_vertex_sparse_args::write(::apache::thrift::protoco
   xfer += oprot->writeFieldBegin("vmsg", ::apache::thrift::protocol::T_LIST, 4);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_DOUBLE, static_cast<uint32_t>(this->vmsg.size()));
-    std::vector<VmsgDtype> ::const_iterator _iter13;
-    for (_iter13 = this->vmsg.begin(); _iter13 != this->vmsg.end(); ++_iter13)
+    std::vector<VmsgDtype> ::const_iterator _iter15;
+    for (_iter15 = this->vmsg.begin(); _iter15 != this->vmsg.end(); ++_iter15)
     {
-      xfer += oprot->writeDouble((*_iter13));
+      xfer += oprot->writeDouble((*_iter15));
     }
     xfer += oprot->writeListEnd();
   }
@@ -352,10 +352,10 @@ uint32_t VertexUpdate_update_vertex_sparse_pargs::write(::apache::thrift::protoc
   xfer += oprot->writeFieldBegin("vid", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I32, static_cast<uint32_t>((*(this->vid)).size()));
-    std::vector<VidDtype> ::const_iterator _iter14;
-    for (_iter14 = (*(this->vid)).begin(); _iter14 != (*(this->vid)).end(); ++_iter14)
+    std::vector<VidDtype> ::const_iterator _iter16;
+    for (_iter16 = (*(this->vid)).begin(); _iter16 != (*(this->vid)).end(); ++_iter16)
     {
-      xfer += oprot->writeI32((*_iter14));
+      xfer += oprot->writeI32((*_iter16));
     }
     xfer += oprot->writeListEnd();
   }
@@ -364,10 +364,10 @@ uint32_t VertexUpdate_update_vertex_sparse_pargs::write(::apache::thrift::protoc
   xfer += oprot->writeFieldBegin("vmsg", ::apache::thrift::protocol::T_LIST, 4);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_DOUBLE, static_cast<uint32_t>((*(this->vmsg)).size()));
-    std::vector<VmsgDtype> ::const_iterator _iter15;
-    for (_iter15 = (*(this->vmsg)).begin(); _iter15 != (*(this->vmsg)).end(); ++_iter15)
+    std::vector<VmsgDtype> ::const_iterator _iter17;
+    for (_iter17 = (*(this->vmsg)).begin(); _iter17 != (*(this->vmsg)).end(); ++_iter17)
     {
-      xfer += oprot->writeDouble((*_iter15));
+      xfer += oprot->writeDouble((*_iter17));
     }
     xfer += oprot->writeListEnd();
   }
@@ -540,14 +540,14 @@ uint32_t VertexUpdate_update_vertex_dense_args::read(::apache::thrift::protocol:
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->vmsg.clear();
-            uint32_t _size16;
-            ::apache::thrift::protocol::TType _etype19;
-            xfer += iprot->readListBegin(_etype19, _size16);
-            this->vmsg.resize(_size16);
-            uint32_t _i20;
-            for (_i20 = 0; _i20 < _size16; ++_i20)
+            uint32_t _size18;
+            ::apache::thrift::protocol::TType _etype21;
+            xfer += iprot->readListBegin(_etype21, _size18);
+            this->vmsg.resize(_size18);
+            uint32_t _i22;
+            for (_i22 = 0; _i22 < _size18; ++_i22)
             {
-              xfer += iprot->readDouble(this->vmsg[_i20]);
+              xfer += iprot->readDouble(this->vmsg[_i22]);
             }
             xfer += iprot->readListEnd();
           }
@@ -588,10 +588,10 @@ uint32_t VertexUpdate_update_vertex_dense_args::write(::apache::thrift::protocol
   xfer += oprot->writeFieldBegin("vmsg", ::apache::thrift::protocol::T_LIST, 4);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_DOUBLE, static_cast<uint32_t>(this->vmsg.size()));
-    std::vector<VmsgDtype> ::const_iterator _iter21;
-    for (_iter21 = this->vmsg.begin(); _iter21 != this->vmsg.end(); ++_iter21)
+    std::vector<VmsgDtype> ::const_iterator _iter23;
+    for (_iter23 = this->vmsg.begin(); _iter23 != this->vmsg.end(); ++_iter23)
     {
-      xfer += oprot->writeDouble((*_iter21));
+      xfer += oprot->writeDouble((*_iter23));
     }
     xfer += oprot->writeListEnd();
   }
@@ -627,10 +627,10 @@ uint32_t VertexUpdate_update_vertex_dense_pargs::write(::apache::thrift::protoco
   xfer += oprot->writeFieldBegin("vmsg", ::apache::thrift::protocol::T_LIST, 4);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_DOUBLE, static_cast<uint32_t>((*(this->vmsg)).size()));
-    std::vector<VmsgDtype> ::const_iterator _iter22;
-    for (_iter22 = (*(this->vmsg)).begin(); _iter22 != (*(this->vmsg)).end(); ++_iter22)
+    std::vector<VmsgDtype> ::const_iterator _iter24;
+    for (_iter24 = (*(this->vmsg)).begin(); _iter24 != (*(this->vmsg)).end(); ++_iter24)
     {
-      xfer += oprot->writeDouble((*_iter22));
+      xfer += oprot->writeDouble((*_iter24));
     }
     xfer += oprot->writeListEnd();
   }

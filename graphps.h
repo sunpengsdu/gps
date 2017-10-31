@@ -307,9 +307,15 @@ void GraphPS::log_update_ratio(int32_t step, double* vertex_update_ratio){
   *vertex_update_ratio = updated_vertex_num*1.0/(_VertexEndID - _VertexStartID);
   long updated_vertex_num_total = 0;
   MPI_Reduce(&updated_vertex_num, &updated_vertex_num_total, 1, MPI_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
+  long network_traffic_2 = get_network_traffic();
+  long traffic_size = network_traffic_2 - network_traffic;
+  long traffic_total_size = 0;
+  MPI_Reduce(&traffic_size, &traffic_total_size, 1, MPI_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
+
   if (_my_rank==0) {
     LOG(INFO) << "Iter " << step << " Updates " << updated_vertex_num_total
       << " Vertices " << updated_vertex_num_total*1.0/_VertexTotalNum 
+      << " Network " << traffic_total_size*1.0/1024/1024 << " MB"
       << " Total Time " << ITER_TIME;
   }
 }
@@ -383,7 +389,6 @@ void GraphPS::send_msg_dense(int32_t p_id, std::vector<VmsgDtype>& vmsg_vec, Vid
   }
 }
 
-
 void GraphPS::run() {
   load_vertex_outdegree();
   activate_all_partiton();
@@ -399,6 +404,7 @@ void GraphPS::run() {
     start_time_comp();
     start_time_iter();
     unsigned seed = _my_rank;
+    network_traffic = get_network_traffic();
     std::shuffle(_Allocated_Partition.begin(), _Allocated_Partition.end(), std::default_random_engine(seed));
     active_partition_num = 0;
     pre_process();

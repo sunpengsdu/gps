@@ -14,6 +14,112 @@
 namespace graphps {
 
 
+ComponentID::~ComponentID() throw() {
+}
+
+
+void ComponentID::__set_minID(const VidDtype val) {
+  this->minID = val;
+}
+
+void ComponentID::__set_maxID(const VidDtype val) {
+  this->maxID = val;
+}
+
+uint32_t ComponentID::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->minID);
+          this->__isset.minID = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->maxID);
+          this->__isset.maxID = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ComponentID::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ComponentID");
+
+  xfer += oprot->writeFieldBegin("minID", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32(this->minID);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("maxID", ::apache::thrift::protocol::T_I32, 2);
+  xfer += oprot->writeI32(this->maxID);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(ComponentID &a, ComponentID &b) {
+  using ::std::swap;
+  swap(a.minID, b.minID);
+  swap(a.maxID, b.maxID);
+  swap(a.__isset, b.__isset);
+}
+
+ComponentID::ComponentID(const ComponentID& other0) {
+  minID = other0.minID;
+  maxID = other0.maxID;
+  __isset = other0.__isset;
+}
+ComponentID& ComponentID::operator=(const ComponentID& other1) {
+  minID = other1.minID;
+  maxID = other1.maxID;
+  __isset = other1.__isset;
+  return *this;
+}
+void ComponentID::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "ComponentID(";
+  out << "minID=" << to_string(minID);
+  out << ", " << "maxID=" << to_string(maxID);
+  out << ")";
+}
+
+
 VertexData::~VertexData() throw() {
 }
 
@@ -136,19 +242,19 @@ void swap(VertexData &a, VertexData &b) {
   swap(a.__isset, b.__isset);
 }
 
-VertexData::VertexData(const VertexData& other0) {
-  value = other0.value;
-  msg = other0.msg;
-  state = other0.state;
-  outdegree = other0.outdegree;
-  __isset = other0.__isset;
+VertexData::VertexData(const VertexData& other2) {
+  value = other2.value;
+  msg = other2.msg;
+  state = other2.state;
+  outdegree = other2.outdegree;
+  __isset = other2.__isset;
 }
-VertexData& VertexData::operator=(const VertexData& other1) {
-  value = other1.value;
-  msg = other1.msg;
-  state = other1.state;
-  outdegree = other1.outdegree;
-  __isset = other1.__isset;
+VertexData& VertexData::operator=(const VertexData& other3) {
+  value = other3.value;
+  msg = other3.msg;
+  state = other3.state;
+  outdegree = other3.outdegree;
+  __isset = other3.__isset;
   return *this;
 }
 void VertexData::printTo(std::ostream& out) const {

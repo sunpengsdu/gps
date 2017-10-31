@@ -22,13 +22,67 @@ namespace graphps {
 
 typedef int32_t VidDtype;
 
+typedef int32_t VdegDtype;
+
 typedef double VvalueDtype;
 
 typedef double VmsgDtype;
 
-typedef int32_t VdegDtype;
+class ComponentID;
 
 class VertexData;
+
+typedef struct _ComponentID__isset {
+  _ComponentID__isset() : minID(false), maxID(false) {}
+  bool minID :1;
+  bool maxID :1;
+} _ComponentID__isset;
+
+class ComponentID : public virtual ::apache::thrift::TBase {
+ public:
+
+  ComponentID(const ComponentID&);
+  ComponentID& operator=(const ComponentID&);
+  ComponentID() : minID(0), maxID(0) {
+  }
+
+  virtual ~ComponentID() throw();
+  VidDtype minID;
+  VidDtype maxID;
+
+  _ComponentID__isset __isset;
+
+  void __set_minID(const VidDtype val);
+
+  void __set_maxID(const VidDtype val);
+
+  bool operator == (const ComponentID & rhs) const
+  {
+    if (!(minID == rhs.minID))
+      return false;
+    if (!(maxID == rhs.maxID))
+      return false;
+    return true;
+  }
+  bool operator != (const ComponentID &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ComponentID & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ComponentID &a, ComponentID &b);
+
+inline std::ostream& operator<<(std::ostream& out, const ComponentID& obj)
+{
+  obj.printTo(out);
+  return out;
+}
 
 typedef struct _VertexData__isset {
   _VertexData__isset() : value(false), msg(false), state(false), outdegree(false) {}

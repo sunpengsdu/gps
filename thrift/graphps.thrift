@@ -1,9 +1,16 @@
 namespace cpp graphps
 
+struct ComponentID {
+  1: VidDtype minID,
+  2: VidDtype maxID,
+}
+
 typedef i32 VidDtype
+typedef i32 VdegDtype
 typedef double VvalueDtype
 typedef double VmsgDtype
-typedef i32 VdegDtype
+# typedef ComponentID VvalueDtype
+# typedef ComponentID VmsgDtype
 
 struct VertexData {
   1: VvalueDtype value,
