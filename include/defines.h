@@ -6,7 +6,7 @@
 // #define COMPRESS
 #define GPS_INF 10000
 #define EDGE_CACHE_SIZE 50*1024 //MB
-#define SPARSE_COMMU 0.2
+#define SPARSE_COMMU 0.4
 #define CMPNUM 22
 #define COMNUM 12
 #define VERTEXCOLNUM 9
